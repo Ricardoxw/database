@@ -26,13 +26,14 @@ public class Command {
             case DELETE -> Executor.delete(sql);
             case DROP_DATABASE -> Executor.dropDatabase(sql);
             case DROP_TABLE -> Executor.dropTable(sql);
-            case ALTER_TABLE_ADD, ALTER_TABLE_DROP -> Executor.alterTable(sql);
+            case ALTER_TABLE_ADD -> Executor.alterTableAdd(sql);
+            case ALTER_TABLE_DROP -> Executor.alterTableDrop(sql);
             case JOIN -> Executor.join(sql);
             default -> "[ERROR] Unknown command type: " + type;
         };
     }
 
-    private CommandType getCommandType(String sql) throws IllegalArgumentException{
+    private CommandType getCommandType(String sql) throws IllegalArgumentException {
         String type = sql.split(" ")[0].toUpperCase();
         String upperSql = sql.toUpperCase();
         switch (type) {

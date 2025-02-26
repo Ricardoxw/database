@@ -10,6 +10,27 @@ public class Table {
     private List<String[]> rows;
     private ArrayList<String> columns;
 
+    public String printTable() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Table: ").append(tableName).append("\n");
+
+        for (String column : columns) {
+            sb.append(column).append("\t");
+        }
+        sb.append("\n");
+        sb.append("-".repeat(columns.size() * 10)).append("\n");
+
+        for (String[] row : rows) {
+            for (String cell : row) {
+                sb.append(cell).append("\t");
+            }
+            sb.append("\n");
+        }
+
+        return sb.toString();
+    }
+
     public String getTableName() {
         return tableName;
     }
@@ -64,4 +85,6 @@ public class Table {
             }
         }
     }
+
+
 }
