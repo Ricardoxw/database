@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.locks.Condition;
 
 public class Table {
     private String tableName;
@@ -106,16 +107,21 @@ public class Table {
     }
 
     public String dropColumns(ArrayList<String> columns) {
+        return "";
     }
 
     public String delete(String condition) {
+        return "";
+
     }
 
     public String update(String updates, String condition) {
+        return "";
     }
 
-    public String select(ArrayList<String> columns, String condition) {
-
+    public String select(ArrayList<String> columns, String conditionStr) {
+        Expression condition = new Expression(conditionStr) ;
+        return "";
     }
 
     public String printTable() {
