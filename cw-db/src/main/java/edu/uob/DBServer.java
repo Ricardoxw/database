@@ -1,6 +1,7 @@
 package edu.uob;
 
 import edu.entity.Command;
+import edu.entity.Database;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -18,6 +19,23 @@ public class DBServer {
 
     private static final char END_OF_TRANSMISSION = 4;
     private String storageFolderPath;
+    private Database database;
+
+    public Database getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(Database database) {
+        this.database = database;
+    }
+
+    public String getStorageFolderPath() {
+        return storageFolderPath;
+    }
+
+    public void setStorageFolderPath(String storageFolderPath) {
+        this.storageFolderPath = storageFolderPath;
+    }
 
     public static void main(String args[]) throws IOException {
         DBServer server = new DBServer();
@@ -48,7 +66,7 @@ public class DBServer {
         // TODO implement your server logic here
         String result = "";
         try{
-            new Command(command).execute();
+            new Command(command).execute(this);
         }catch (Exception e){
 
         }

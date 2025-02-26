@@ -1,5 +1,7 @@
-package edu.constant;
+package edu.utils;
 
+
+import edu.constant.CommandType;
 
 public class SqlParser {
 

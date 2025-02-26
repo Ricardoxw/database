@@ -4,6 +4,8 @@ import edu.constant.CommandType;
 import edu.uob.DBServer;
 import edu.utils.Executor;
 
+import java.io.IOException;
+
 
 public class Command {
     private String sql;
@@ -15,20 +17,20 @@ public class Command {
         this.sql = trimmedSQL;
     }
 
-    public String execute() {
+    public String execute(DBServer dbServer) throws IOException {
         return switch (type) {
-            case USE -> Executor.use(sql);
-            case CREATE_DATABASE -> Executor.createDatabase(sql);
-            case CREATE_TABLE -> Executor.createTable(sql);
-            case INSERT -> Executor.insert(sql);
-            case SELECT -> Executor.select(sql);
-            case UPDATE -> Executor.update(sql);
-            case DELETE -> Executor.delete(sql);
-            case DROP_DATABASE -> Executor.dropDatabase(sql);
-            case DROP_TABLE -> Executor.dropTable(sql);
-            case ALTER_TABLE_ADD -> Executor.alterTableAdd(sql);
-            case ALTER_TABLE_DROP -> Executor.alterTableDrop(sql);
-            case JOIN -> Executor.join(sql);
+            case USE -> Executor.use(sql, dbServer);
+            case CREATE_DATABASE -> Executor.createDatabase(sql, dbServer);
+            case CREATE_TABLE -> Executor.createTable(sql, dbServer);
+            case INSERT -> Executor.insert(sql, dbServer);
+            case SELECT -> Executor.select(sql, dbServer);
+            case UPDATE -> Executor.update(sql, dbServer);
+            case DELETE -> Executor.delete(sql, dbServer);
+            case DROP_DATABASE -> Executor.dropDatabase(sql, dbServer);
+            case DROP_TABLE -> Executor.dropTable(sql, dbServer);
+            case ALTER_TABLE_ADD -> Executor.alterTableAdd(sql, dbServer);
+            case ALTER_TABLE_DROP -> Executor.alterTableDrop(sql, dbServer);
+            case JOIN -> Executor.join(sql, dbServer);
             default -> "[ERROR] Unknown command type: " + type;
         };
     }
