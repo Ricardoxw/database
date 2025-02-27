@@ -1,6 +1,7 @@
 package edu.entity;
 
 import edu.constant.ExpressionType;
+import edu.utils.ToolUtils;
 
 import java.util.ArrayList;
 
@@ -19,15 +20,6 @@ public class Expression {
     public Expression(String expressionStr) {
         this.expressionStr = expressionStr;
         parse(expressionStr);
-    }
-
-    public static boolean isNumeric(String str) {
-        try {
-            Double.parseDouble(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
     public String formatSubExpression(String str) {
@@ -69,7 +61,7 @@ public class Expression {
         }
 
         if (conditionStr.matches("'.*'") // str
-                || isNumeric(conditionStr) // numeric
+                || ToolUtils.isNumeric(conditionStr) // numeric
                 || conditionStr.equalsIgnoreCase("true") // boolean
                 || conditionStr.equalsIgnoreCase("false")
                 || conditionStr.equalsIgnoreCase("null")) {

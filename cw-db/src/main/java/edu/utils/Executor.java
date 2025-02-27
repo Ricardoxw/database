@@ -10,12 +10,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Executor {
     public static String use(String sql, DBServer dbServer) {
         String[] params = SqlParser.parseSQL(CommandType.USE, sql);
         String dbName = params[0];
-        dbServer.setDatabase(new Database(dbName, dbServer.getStorageFolderPath()+File.separator+dbName));
+        if(Database.isExistDataBase(dbName)){
+            Database db = new Database(dbName, dbServer.getStorageFolderPath()+File.separator+dbName);
+            dbServer.setDatabase(db);
+            return "[OK]";
+        }
         return "[ERROR] Method not implemented";
     }
 
@@ -45,19 +50,22 @@ public class Executor {
         String[] values = params[1].split(",");
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
-        table.insert(new ArrayList<>(List.of(values)));
-        return "[ERROR] Method not implemented";
+        return table.insert(new ArrayList<>(List.of(values)));
     }
 
     public static String select(String sql, DBServer dbServer) throws IOException {
         String[] params = SqlParser.parseSQL(CommandType.SELECT, sql);
         String tableName = params[0];
-        String[] columns = params[1].split(",");
+        ArrayList<String> columns;
+        if(Objects.equals(params[1], "*")){
+            columns = dbServer.getDatabase().getTable(tableName).getColumnNames();
+        }else{
+            columns = new ArrayList<>(List.of(params[1].split(",")));
+        }
         String condition = params[2];
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
-        table.select(new ArrayList<>(List.of(columns)), condition);
-        return "[ERROR] Method not implemented";
+        return table.select(columns, condition);
     }
 
     public static String update(String sql, DBServer dbServer) throws IOException {
@@ -67,8 +75,7 @@ public class Executor {
         String condition = params[2];
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
-        table.update(updates, condition);
-        return "[ERROR] Method not implemented";
+        return table.update(updates, condition);
     }
 
     public static String delete(String sql, DBServer dbServer) throws IOException {
@@ -77,8 +84,7 @@ public class Executor {
         String condition = params[1];
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
-        table.delete(condition);
-        return "[ERROR] Method not implemented";
+        return table.delete(condition);
     }
 
     public static String dropDatabase(String sql, DBServer dbServer) {
@@ -91,8 +97,7 @@ public class Executor {
         String[] params = SqlParser.parseSQL(CommandType.DROP_TABLE, sql);
         String tableName = params[0];
         Database db = dbServer.getDatabase();
-        db.remove(tableName);
-        return "[ERROR] Method not implemented";
+        return db.remove(tableName);
     }
 
     public static String alterTableAdd(String sql, DBServer dbServer) throws IOException {
@@ -101,8 +106,7 @@ public class Executor {
         String[] columns = params[1].split(",");
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
-        table.addColumns(new ArrayList<>(List.of(columns)));
-        return "[ERROR] Method not implemented";
+        return table.addColumns(new ArrayList<>(List.of(columns)));
     }
 
     public static String alterTableDrop(String sql, DBServer dbServer) throws IOException {
@@ -111,8 +115,7 @@ public class Executor {
         String[] columns = params[1].split(",");
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
-        table.dropColumns(new ArrayList<>(List.of(columns)));
-        return "[ERROR] Method not implemented";
+        return table.dropColumns(new ArrayList<>(List.of(columns)));
     }
 
     public static String join(String sql, DBServer dbServer) throws IOException {
@@ -124,8 +127,7 @@ public class Executor {
         Database db = dbServer.getDatabase();
         Table table1 = db.getTable(tableName1);
         Table table2 = db.getTable(tableName2);
-        db.joinTables(table1, table2, column1, column2);
-        return "[ERROR] Method not implemented";
+        return db.joinTables(table1, table2, column1, column2);
     }
 
 }
