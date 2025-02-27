@@ -31,7 +31,10 @@ public class Expression {
 
     public void parse(String conditionStr) {
         conditionStr = conditionStr.trim().replaceAll("\\s+", " ");
-
+        if(conditionStr.isEmpty()||conditionStr.equals(" ")){
+            this.expressionStr = "";
+            this.value = "TRUE";
+        }
         for (String op : BoolOperators) {
             int index = conditionStr.toUpperCase().indexOf(" " + op + " ");
             if (index != -1) {
@@ -122,22 +125,20 @@ public class Expression {
         return sb.toString();
     }
 
-    public boolean isCondition() {
-        return type.equals(ExpressionType.AND_EXPRESSION) || type.equals(ExpressionType.OR_EXPRESSION) || type.equals(ExpressionType.COMPARISON_EXPRESSION);
-    }
-
-    public boolean isConditionSatisfied(ArrayList<String> columns, ArrayList<String> row) {
+    public boolean isConditionSatisfied(ArrayList<String> columnNames, ArrayList<String> row) {
         switch (this.type) {
             case AND_EXPRESSION:
-                return left.isConditionSatisfied(columns, row) && right.isConditionSatisfied(columns, row);
+                return left.isConditionSatisfied(columnNames, row) && right.isConditionSatisfied(columnNames, row);
             case OR_EXPRESSION:
-                return left.isConditionSatisfied(columns, row) || right.isConditionSatisfied(columns, row);
+                return left.isConditionSatisfied(columnNames, row) || right.isConditionSatisfied(columnNames, row);
             case COMPARISON_EXPRESSION:
-                int columnIndex = columns.indexOf(left.getColumn());
+                int columnIndex = ToolUtils.getIndexIgnoreCase(left.getColumn(), columnNames);
                 if (columnIndex == -1)
                     throw new IllegalArgumentException("Column not found: " + left.getColumn());
                 String rowValue = row.get(columnIndex);
                 return compareRowValueWithConditionValue(rowValue, right.getValue(), operator);
+            case VALUE:
+                return value.equals("TRUE");
         }
         return false;
     }

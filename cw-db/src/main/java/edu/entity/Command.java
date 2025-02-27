@@ -12,9 +12,9 @@ public class Command {
     private CommandType type;
 
     public Command(String content) {
-        String trimmedSQL = content.trim().replaceAll("\\s+", " ");
-        this.type = getCommandType(sql);
+        String trimmedSQL = content.trim().replaceAll("\\s+", " ").replaceAll(";$", "");
         this.sql = trimmedSQL;
+        this.type = getCommandType(trimmedSQL);
     }
 
     public String execute(DBServer dbServer) throws IOException {

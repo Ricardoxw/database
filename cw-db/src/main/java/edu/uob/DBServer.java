@@ -62,13 +62,14 @@ public class DBServer {
     *
     * <p>This method handles all incoming DB commands and carries out the required actions.
     */
-    public String handleCommand(String command) {
+    public String handleCommand(String commandStr) {
         // TODO implement your server logic here
         String result = "";
         try{
-            new Command(command).execute(this);
+            Command comand = new Command(commandStr);
+            result = comand.execute(this);
         }catch (Exception e){
-
+            System.out.println(e.getMessage());
         }
         return result;
     }

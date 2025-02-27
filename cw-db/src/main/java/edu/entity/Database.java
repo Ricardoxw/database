@@ -18,12 +18,13 @@ public class Database {
 
     //lazy loading
     public Database(String dbName, String filePath) {
-        this.name = dbName;
+        this.name = dbName.toLowerCase().trim();
         this.storagePath = filePath;
         this.tables = new HashMap<>();
     }
 
     public static String dropDatabase(DBServer dbServer, String dbName) {
+        dbName = dbName.toLowerCase().trim();
         Database db = new Database(dbName, dbServer.getStorageFolderPath());
         String storagePath = db.storagePath;
         String dbFolderPath = storagePath + File.separator + dbName;
@@ -41,18 +42,20 @@ public class Database {
     }
 
     public static boolean isExistDataBase(String dbName) {
+        dbName = dbName.toLowerCase().trim();
         String databasePath = storagePath + File.separator + dbName;
         File dbDirectory = new File(databasePath);
         return dbDirectory.exists() && dbDirectory.isDirectory();
     }
 
     public boolean containsTable(String tableName) {
-        String tableFilePath = storagePath + File.separator + tableName + ".tab";
+        String tableFilePath = storagePath + File.separator + tableName.toLowerCase().trim() + ".tab";
         File tableFile = new File(tableFilePath);
         return tableFile.exists();
     }
 
     public String createTable(String tableName, String[] columns) {
+        tableName = tableName.toLowerCase().trim();
         String tableFilePath = storagePath + File.separator + tableName + ".tab";
         File tableFile = new File(tableFilePath);
 
@@ -61,6 +64,8 @@ public class Database {
         }
 
         try (FileWriter writer = new FileWriter(tableFile)) {
+            writer.write("id");
+            writer.write("\t");
             for (int i = 0; i < columns.length; i++) {
                 writer.write(columns[i]);
                 if (i < columns.length - 1) {
@@ -76,12 +81,13 @@ public class Database {
     }
 
     public Table getTable(String tableName) throws IOException {
+        tableName = tableName.toLowerCase().trim();
         String tableFilePath = storagePath + File.separator + tableName + ".tab";
         File tableFile = new File(tableFilePath);
         if(tables.containsKey(tableName)) {
             return tables.get(tableName);
         }else if(tableFile.exists()) {
-            this.tables.put(tableName, Table.loadTable(tableFilePath));
+            this.tables.put(tableName, Table.loadTable(tableName, tableFilePath));
             return tables.get(tableName);
         }else{
             return null;
@@ -92,8 +98,8 @@ public class Database {
         ArrayList<String> columnsT1 = table1.getColumnNames();
         ArrayList<String> columnsT2 = table2.getColumnNames();
 
-        int index1 = columnsT1.indexOf(column1);
-        int index2 = columnsT2.indexOf(column2);
+        int index1 = ToolUtils.getIndexIgnoreCase(column1, columnsT1);
+        int index2 = ToolUtils.getIndexIgnoreCase(column2, columnsT2);
 
         if (index1 == -1 || index2 == -1) {
             return "[ERROR] Join columns not found.";
@@ -141,6 +147,7 @@ public class Database {
     }
 
     public String remove(String tableName) throws IOException {
+        tableName = tableName.toLowerCase().trim();
         Table table = getTable(tableName);
         tables.remove(tableName);
         return Table.dropTable(table);

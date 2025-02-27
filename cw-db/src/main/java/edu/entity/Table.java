@@ -9,11 +9,16 @@ public class Table {
     private String tableName;
     private List<ArrayList<String>> rows;
     private ArrayList<String> columnNames;
+
+    public Table() {
+        rows = new ArrayList<>();
+    }
+
     private String storagePath;
 
     public static String dropTable(Table table) {
         String storagePath = table.getStoragePath();
-        String tableName = table.getTableName();
+        String tableName = table.getTableName().toLowerCase().trim();
         File tableFile = new File(storagePath);
 
         if (tableFile.exists()) {
@@ -59,9 +64,11 @@ public class Table {
         this.columnNames = columnNames;
     }
 
-    public static Table loadTable(String filePath) throws IOException {
+    public static Table loadTable(String tableName, String filePath) throws IOException {
+        tableName = tableName.toLowerCase().trim();
         Table table = new Table();
         table.setStoragePath(filePath);
+        table.setTableName(tableName);
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             table.setColumnNames(new ArrayList<>(List.of(br.readLine().split("\t"))));
@@ -73,8 +80,15 @@ public class Table {
         return table;
     }
 
-    public void saveTable(String filePath) throws IOException {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
+    public void appendRowToFile(String filePath, ArrayList<String> row) throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath, true))) {
+            bw.write(String.join("\t", row));
+            bw.newLine();
+        }
+    }
+
+    public void saveTable() throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(storagePath))) {
             bw.write(String.join("\t", columnNames));
             bw.newLine();
             for (ArrayList<String> row : rows) {
@@ -84,19 +98,20 @@ public class Table {
         }
     }
 
-    public String insert(ArrayList<String> values) {
+    public String insert(ArrayList<String> values) throws IOException {
         String id = ToolUtils.generateId();
         ArrayList<String> row = new ArrayList<>();
         row.add(id);
         row.addAll(values);
         rows.add(row);
-        return "[OK] Inserted 1 row.";
+        appendRowToFile(storagePath, row);
+        return "[OK]";
     }
 
-    public String addColumns(ArrayList<String> columns) {
+    public String addColumns(ArrayList<String> columns) throws IOException{
         int count = 0;
         for (String column : columns) {
-            if (!columnNames.contains(column)) {
+            if (columnNames.stream().noneMatch(col -> col.equalsIgnoreCase(column))) {
                 columnNames.add(column);
                 count++;
                 for (ArrayList<String> row : rows) {
@@ -104,14 +119,15 @@ public class Table {
                 }
             }
         }
+        saveTable();
         return "[OK] Add " + count + " columns.";
     }
 
-    public String dropColumns(ArrayList<String> columns) {
+    public String dropColumns(ArrayList<String> columns) throws IOException{
         List<Integer> columnIndexes = new ArrayList<>();
         int count = 0;
         for (String column : columns) {
-            int index = columnNames.indexOf(column);
+            int index = ToolUtils.getIndexIgnoreCase(column, columnNames);
             if (index == -1) {
                 return "[ERROR] Column not found: " + column;
             }
@@ -127,11 +143,11 @@ public class Table {
                 row.remove(index);
             }
         }
-
+        saveTable();
         return "[OK] Drop " + count + " columns.";
     }
 
-    public String delete(String conditionStr) {
+    public String delete(String conditionStr) throws IOException{
         Expression condition = new Expression(conditionStr);
         int count = 0;
         for (Iterator<ArrayList<String>> it = rows.iterator(); it.hasNext(); ) {
@@ -141,10 +157,11 @@ public class Table {
                 count++;
             }
         }
+        saveTable();
         return "[OK] Deleted " + count + " rows.";
     }
 
-    public String update(String updatesStr, String conditionStr) {
+    public String update(String updatesStr, String conditionStr) throws IOException{
         Expression condition = new Expression(conditionStr);
         int count = 0;
 
@@ -160,7 +177,7 @@ public class Table {
         for (ArrayList<String> row : rows) {
             if (condition.isConditionSatisfied(columnNames, row)) {
                 for (Map.Entry<String, String> entry : updateMap.entrySet()) {
-                    int columnIndex = columnNames.indexOf(entry.getKey());
+                    int columnIndex = ToolUtils.getIndexIgnoreCase(entry.getKey(), columnNames);
                     if (columnIndex != -1) {
                         row.set(columnIndex, entry.getValue());
                     }
@@ -168,7 +185,7 @@ public class Table {
                 count++;
             }
         }
-
+        saveTable();
         return "[OK] Updated " + count + " rows.";
     }
 
@@ -179,7 +196,7 @@ public class Table {
             if (condition.isConditionSatisfied(columnNames, row)) {
                 ArrayList<String> selectedRow = new ArrayList<>();
                 for (String column : columns) {
-                    int columnIndex = columnNames.indexOf(column);
+                    int columnIndex = ToolUtils.getIndexIgnoreCase(column, columnNames);;
                     if (columnIndex != -1) {
                         selectedRow.add(row.get(columnIndex));
                     }

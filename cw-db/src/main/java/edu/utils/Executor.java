@@ -15,9 +15,9 @@ import java.util.Objects;
 public class Executor {
     public static String use(String sql, DBServer dbServer) {
         String[] params = SqlParser.parseSQL(CommandType.USE, sql);
-        String dbName = params[0];
-        if(Database.isExistDataBase(dbName)){
-            Database db = new Database(dbName, dbServer.getStorageFolderPath()+File.separator+dbName);
+        String dbName = params[0].toLowerCase().trim();
+        if (Database.isExistDataBase(dbName)) {
+            Database db = new Database(dbName, dbServer.getStorageFolderPath() + File.separator + dbName);
             dbServer.setDatabase(db);
             return "[OK]";
         }
@@ -27,16 +27,16 @@ public class Executor {
     public static String createDatabase(String sql, DBServer dbServer) {
         String[] params = SqlParser.parseSQL(CommandType.CREATE_DATABASE, sql);
         String dbName = params[0];
-        File storageFolder = new File(dbServer.getStorageFolderPath()+File.separator+dbName);
+        File storageFolder = new File(dbServer.getStorageFolderPath() + File.separator + dbName);
         if (!storageFolder.exists()) {
             storageFolder.mkdirs();
             return "[OK]";
-        }else{
+        } else {
             return "[ERROR] Database already exists: " + dbName;
         }
     }
 
-    public static String createTable(String sql, DBServer dbServer){
+    public static String createTable(String sql, DBServer dbServer) {
         String[] params = SqlParser.parseSQL(CommandType.CREATE_TABLE, sql);
         String tableName = params[0];
         String[] columns = params[1].split(",");
@@ -50,6 +50,9 @@ public class Executor {
         String[] values = params[1].split(",");
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
+        if (table == null) {
+            return "[ERROR] Table does not exist: " + tableName;
+        }
         return table.insert(new ArrayList<>(List.of(values)));
     }
 
@@ -57,14 +60,17 @@ public class Executor {
         String[] params = SqlParser.parseSQL(CommandType.SELECT, sql);
         String tableName = params[0];
         ArrayList<String> columns;
-        if(Objects.equals(params[1], "*")){
-            columns = dbServer.getDatabase().getTable(tableName).getColumnNames();
-        }else{
-            columns = new ArrayList<>(List.of(params[1].split(",")));
-        }
         String condition = params[2];
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
+        if (table == null) {
+            return "[ERROR] Table does not exist: " + tableName;
+        }
+        if (Objects.equals(params[1], "*")) {
+            columns = dbServer.getDatabase().getTable(tableName).getColumnNames();
+        } else {
+            columns = new ArrayList<>(List.of(params[1].split(",")));
+        }
         return table.select(columns, condition);
     }
 
@@ -75,6 +81,9 @@ public class Executor {
         String condition = params[2];
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
+        if (table == null) {
+            return "[ERROR] Table does not exist: " + tableName;
+        }
         return table.update(updates, condition);
     }
 
@@ -84,6 +93,9 @@ public class Executor {
         String condition = params[1];
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
+        if (table == null) {
+            return "[ERROR] Table does not exist: " + tableName;
+        }
         return table.delete(condition);
     }
 
@@ -106,6 +118,9 @@ public class Executor {
         String[] columns = params[1].split(",");
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
+        if (table == null) {
+            return "[ERROR] Table does not exist: " + tableName;
+        }
         return table.addColumns(new ArrayList<>(List.of(columns)));
     }
 
@@ -115,6 +130,9 @@ public class Executor {
         String[] columns = params[1].split(",");
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
+        if (table == null) {
+            return "[ERROR] Table does not exist: " + tableName;
+        }
         return table.dropColumns(new ArrayList<>(List.of(columns)));
     }
 
@@ -127,6 +145,15 @@ public class Executor {
         Database db = dbServer.getDatabase();
         Table table1 = db.getTable(tableName1);
         Table table2 = db.getTable(tableName2);
+        if (table1 == null || table2 == null) {
+            String tableName;
+            if (table1 == null) {
+                tableName = tableName1;
+            } else {
+                tableName = tableName2;
+            }
+            return "[ERROR] Table does not exist: " + tableName;
+        }
         return db.joinTables(table1, table2, column1, column2);
     }
 

@@ -44,4 +44,12 @@ public class ToolUtils {
         int random = new Random().nextInt(1000);
         return String.valueOf(timestamp) + random;
     }
+
+    public static int getIndexIgnoreCase(String column, ArrayList<String> columns) {
+        return columns.stream()
+                .mapToInt(col -> col.equalsIgnoreCase(column) ? columns.indexOf(col) : -1)
+                .filter(i -> i != -1)
+                .findFirst()
+                .orElse(-1);
+    }
 }
