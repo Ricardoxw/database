@@ -6,7 +6,6 @@ import edu.constant.CommandType;
 public class SqlParser {
 
     public static String[] parseSQL(CommandType type, String sql) {
-        sql = sql.trim().toUpperCase().trim();
         return switch (type) {
             case USE -> parseUse(sql);
             case CREATE_DATABASE -> parseCreateDatabase(sql);
@@ -51,10 +50,10 @@ public class SqlParser {
     //SELECT * FROM marks WHERE name LIKE 'i';
     //SELECT a, b, c FROM marks WHERE name != 'Sion';
     private static String[] parseSelect(String sql) {
-        int fromIndex = sql.toUpperCase().indexOf("FROM");
+        int fromIndex = ToolUtils.indexOfIgnoreCase(sql, "FROM");
         String fields = sql.substring(7, fromIndex).trim();
 
-        int whereIndex = sql.toUpperCase().indexOf("WHERE");
+        int whereIndex = ToolUtils.indexOfIgnoreCase(sql, "WHERE");
         String tableName;
         if (whereIndex != -1) {
             tableName = sql.substring(fromIndex + 5, whereIndex).trim();
@@ -74,7 +73,7 @@ public class SqlParser {
     private static String[] parseInsert(String sql) {
         String[] parts = sql.split(" ");
         String tableName = parts[2];
-        String values = sql.substring(sql.indexOf("VALUES") + 6).trim();
+        String values = sql.substring(ToolUtils.indexOfIgnoreCase(sql, "VALUES") + 6).trim();
         if (values.startsWith("(") && values.endsWith(")")) {
             values = values.substring(1, values.length() - 1);
         }
@@ -83,11 +82,11 @@ public class SqlParser {
 
     //UPDATE marks SET mark = 38 WHERE name == 'Chris';
     private static String[] parseUpdate(String sql) {
-        int updateIndex = sql.toUpperCase().indexOf("UPDATE");
-        int setIndex = sql.toUpperCase().indexOf("SET");
+        int updateIndex = ToolUtils.indexOfIgnoreCase(sql, "UPDATE");
+        int setIndex = ToolUtils.indexOfIgnoreCase(sql, "SET");
         String tableName = sql.substring(updateIndex + 6, setIndex).trim();
 
-        int whereIndex = sql.toUpperCase().indexOf("WHERE");
+        int whereIndex = ToolUtils.indexOfIgnoreCase(sql, "WHERE");
         String updates;
         if (whereIndex != -1) {
             updates = sql.substring(setIndex + 4, whereIndex).trim();
@@ -106,8 +105,8 @@ public class SqlParser {
     //DELETE FROM marks WHERE name == 'Sion';
     private static String[] parseDelete(String sql) {
 
-        int tableNameIndex = sql.toUpperCase().indexOf("FROM") + 5;
-        int whereIndex = sql.toUpperCase().indexOf("WHERE");
+        int tableNameIndex = ToolUtils.indexOfIgnoreCase(sql, "FROM") + 5;
+        int whereIndex = ToolUtils.indexOfIgnoreCase(sql, "WHERE");;
 
         String tableName;
         if (whereIndex != -1) {
@@ -159,6 +158,7 @@ public class SqlParser {
 
     //JOIN coursework AND marks ON submission AND id;
     private static String[] parseJoin(String sql) {
+        sql = sql.trim().toUpperCase().trim();
         int joinIndex = sql.indexOf("JOIN");
         int onIndex = sql.indexOf("ON");
         String tables = sql.substring(joinIndex + 5, onIndex).trim();

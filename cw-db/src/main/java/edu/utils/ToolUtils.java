@@ -52,4 +52,40 @@ public class ToolUtils {
                 .findFirst()
                 .orElse(-1);
     }
+
+    public static int indexOfIgnoreCase(String source, String target) {
+        if (source == null || target == null) {
+            return -1;
+        }
+        return source.toLowerCase().indexOf(target.toLowerCase());
+    }
+
+    public static boolean checkLikeCondition(String rowValue, int rowIndex, String conditionValue, int conditionIndex) {
+        if (conditionIndex == conditionValue.length()) {
+            return rowValue.length() == rowIndex;
+        }
+        char conditionChar = conditionValue.charAt(conditionIndex);
+        if (conditionChar == '%') {
+            if (conditionIndex == conditionValue.length() - 1) {
+                return true;
+            }
+            for (int i = rowIndex; i <= rowValue.length(); i++) {
+                if (checkLikeCondition(rowValue, i, conditionValue, conditionIndex + 1)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (conditionChar == '_') {
+            if (rowIndex >= rowValue.length()) {
+                return false;
+            }
+            return checkLikeCondition(rowValue, rowIndex + 1, conditionValue, conditionIndex + 1);
+        }
+        if (rowIndex >= rowValue.length() || rowValue.charAt(rowIndex) != conditionChar) {
+            return false;
+        }
+        return checkLikeCondition(rowValue, rowIndex + 1, conditionValue, conditionIndex + 1);
+    }
+
 }

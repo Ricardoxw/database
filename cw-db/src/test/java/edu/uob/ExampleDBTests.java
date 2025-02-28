@@ -1,5 +1,6 @@
 package edu.uob;
 
+import static edu.entity.Expression.compareRowValueWithConditionValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;

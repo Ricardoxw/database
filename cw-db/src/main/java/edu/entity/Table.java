@@ -71,7 +71,13 @@ public class Table {
         table.setTableName(tableName);
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
-            table.setColumnNames(new ArrayList<>(List.of(br.readLine().split("\t"))));
+            ArrayList<String> columnNames = new ArrayList<>();
+            String[] columns = br.readLine().split("\t");
+            for (String column : columns) {
+                columnNames.add(column.trim());
+            }
+            table.setColumnNames(columnNames);
+
             while ((line = br.readLine()) != null) {
                 ArrayList<String> row = new ArrayList<>(List.of(line.split("\t")));
                 table.rows.add(row);
@@ -102,7 +108,9 @@ public class Table {
         String id = ToolUtils.generateId();
         ArrayList<String> row = new ArrayList<>();
         row.add(id);
-        row.addAll(values);
+        for(String value:values){
+            row.add(value.trim());
+        }
         rows.add(row);
         appendRowToFile(storagePath, row);
         return "[OK]";

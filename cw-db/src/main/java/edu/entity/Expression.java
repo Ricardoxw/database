@@ -34,6 +34,8 @@ public class Expression {
         if(conditionStr.isEmpty()||conditionStr.equals(" ")){
             this.expressionStr = "";
             this.value = "TRUE";
+            this.type = ExpressionType.VALUE;
+            return;
         }
         for (String op : BoolOperators) {
             int index = conditionStr.toUpperCase().indexOf(" " + op + " ");
@@ -57,12 +59,6 @@ public class Expression {
             }
         }
 
-        if (conditionStr.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
-            this.column = conditionStr;
-            this.type = ExpressionType.COLUMN;
-            return;
-        }
-
         if (conditionStr.matches("'.*'") // str
                 || ToolUtils.isNumeric(conditionStr) // numeric
                 || conditionStr.equalsIgnoreCase("true") // boolean
@@ -73,6 +69,11 @@ public class Expression {
             return;
         }
 
+        if (conditionStr.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
+            this.column = conditionStr;
+            this.type = ExpressionType.COLUMN;
+            return;
+        }
         throw new IllegalArgumentException("Invalid condition format: " + conditionStr);
     }
 
@@ -143,12 +144,9 @@ public class Expression {
         return false;
     }
 
-    private static boolean compareRowValueWithConditionValue(String rowValue, String conditionValue, String operator) {
-        // @todo there is some error in execute like compare
+    public static boolean compareRowValueWithConditionValue(String rowValue, String conditionValue, String operator) {
         if (operator.equalsIgnoreCase("LIKE")) {
-            conditionValue = conditionValue.replaceAll("([.^$*+?(){}\\[\\]|])", "\\\\$1");
-            conditionValue = conditionValue.replace("%", ".*").replace("_", ".");
-            return rowValue.matches(conditionValue);
+            return ToolUtils.checkLikeCondition(rowValue,0, conditionValue,0);
         }
 
         try {
@@ -166,6 +164,8 @@ public class Expression {
         } catch (NumberFormatException e) {
             if (operator.equals("==")) {
                 return rowValue.equals(conditionValue);
+            }else if (operator.equals("!=")) {
+                return !rowValue.equals(conditionValue);
             }
             throw new IllegalArgumentException("Unsupported operator: " + operator);
         }
