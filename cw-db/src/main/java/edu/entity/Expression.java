@@ -135,16 +135,39 @@ public class Expression {
             case COMPARISON_EXPRESSION:
                 int columnIndex = ToolUtils.getIndexIgnoreCase(left.getColumn(), columnNames);
                 if (columnIndex == -1)
-                    throw new IllegalArgumentException("Column not found: " + left.getColumn());
+                    throw new IllegalArgumentException("[ERROR]: Attribute does not exist");
                 String rowValue = row.get(columnIndex);
-                return compareRowValueWithConditionValue(rowValue, right.getValue(), operator);
+                if(validateExpressionValue(right)){
+                    return compareRowValueWithConditionValue(rowValue, right.getValue(), operator);
+                }else{
+                    throw new IllegalArgumentException("[ERROR]: Condition value is not valid");
+                }
             case VALUE:
                 return value.equals("TRUE");
         }
         return false;
     }
 
+    public static boolean validateExpressionValue(Expression expression) {
+        String expressionValue = expression.getValue();
+        if ("true".equalsIgnoreCase(expressionValue) || "false".equalsIgnoreCase(expressionValue)) {
+            return true;
+        }
+        try {
+            Double.parseDouble(expressionValue);
+            return true;
+        } catch (NumberFormatException e) {
+            if (expressionValue.startsWith("'") && expressionValue.endsWith("'")) {
+                expression.setValue(expressionValue.substring(1, expressionValue.length() - 1));
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     public static boolean compareRowValueWithConditionValue(String rowValue, String conditionValue, String operator) {
+
         if (operator.equalsIgnoreCase("LIKE")) {
             return ToolUtils.checkLikeCondition(rowValue,0, conditionValue,0);
         }

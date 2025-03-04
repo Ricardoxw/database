@@ -12,9 +12,14 @@ public class Command {
     private CommandType type;
 
     public Command(String content) {
-        String trimmedSQL = content.trim().replaceAll("\\s+", " ").replaceAll(";$", "");
-        this.sql = trimmedSQL;
-        this.type = getCommandType(trimmedSQL);
+        String trimmedSQL = content.trim().replaceAll("\\s+", " ");
+
+        if (!trimmedSQL.endsWith(";")) {
+            throw new IllegalArgumentException("[ERROR]: Semi colon missing at end of line");
+        }
+
+        this.sql = trimmedSQL.substring(0, trimmedSQL.length() - 1);
+        this.type = getCommandType(this.sql);
     }
 
     public String execute(DBServer dbServer) throws IOException {

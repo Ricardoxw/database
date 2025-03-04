@@ -108,7 +108,7 @@ public class Table {
         String id = ToolUtils.generateId();
         ArrayList<String> row = new ArrayList<>();
         row.add(id);
-        for(String value:values){
+        for (String value : values) {
             row.add(value.trim());
         }
         rows.add(row);
@@ -116,7 +116,7 @@ public class Table {
         return "[OK]";
     }
 
-    public String addColumns(ArrayList<String> columns) throws IOException{
+    public String addColumns(ArrayList<String> columns) throws IOException {
         int count = 0;
         for (String column : columns) {
             if (columnNames.stream().noneMatch(col -> col.equalsIgnoreCase(column))) {
@@ -131,7 +131,7 @@ public class Table {
         return "[OK] Add " + count + " columns.";
     }
 
-    public String dropColumns(ArrayList<String> columns) throws IOException{
+    public String dropColumns(ArrayList<String> columns) throws IOException {
         List<Integer> columnIndexes = new ArrayList<>();
         int count = 0;
         for (String column : columns) {
@@ -155,7 +155,7 @@ public class Table {
         return "[OK] Drop " + count + " columns.";
     }
 
-    public String delete(String conditionStr) throws IOException{
+    public String delete(String conditionStr) throws IOException {
         Expression condition = new Expression(conditionStr);
         int count = 0;
         for (Iterator<ArrayList<String>> it = rows.iterator(); it.hasNext(); ) {
@@ -169,48 +169,70 @@ public class Table {
         return "[OK] Deleted " + count + " rows.";
     }
 
-    public String update(String updatesStr, String conditionStr) throws IOException{
+    public String update(String updatesStr, String conditionStr) throws IOException {
         Expression condition = new Expression(conditionStr);
         int count = 0;
-
         String[] updates = updatesStr.split(",");
-        Map<String, String> updateMap = new HashMap<>();
-        for (String update : updates) {
-            String[] params = update.trim().split("=");
-            String column = params[0].trim();
-            String value = params[1].trim();
-            updateMap.put(column, value);
+        try{
+            for (String update : updates) {
+                String[] params = update.trim().split("=");
+                String column = params[0].trim();
+                if (ToolUtils.getIndexIgnoreCase(column, columnNames) == -1) {
+                    throw new IllegalArgumentException("[ERROR]: Attribute does not exist");
+                }
+            }
+
+            Map<String, String> updateMap = new HashMap<>();
+            for (String update : updates) {
+                String[] params = update.trim().split("=");
+                String column = params[0].trim();
+                String value = params[1].trim();
+                updateMap.put(column, value);
+            }
+
+            for (ArrayList<String> row : rows) {
+                if (condition.isConditionSatisfied(columnNames, row)) {
+                    for (Map.Entry<String, String> entry : updateMap.entrySet()) {
+                        int columnIndex = ToolUtils.getIndexIgnoreCase(entry.getKey(), columnNames);
+                        if (columnIndex != -1) {
+                            row.set(columnIndex, entry.getValue());
+                        }else{
+                            throw new IllegalArgumentException("[ERROR]: Attribute in condition does not exist");
+                        }
+                    }
+                    count++;
+                }
+            }
+            saveTable();
+            return "[OK] Updated " + count + " rows.";
+        }catch (IllegalArgumentException e){
+            return e.getMessage();
         }
 
-        for (ArrayList<String> row : rows) {
-            if (condition.isConditionSatisfied(columnNames, row)) {
-                for (Map.Entry<String, String> entry : updateMap.entrySet()) {
-                    int columnIndex = ToolUtils.getIndexIgnoreCase(entry.getKey(), columnNames);
-                    if (columnIndex != -1) {
-                        row.set(columnIndex, entry.getValue());
-                    }
-                }
-                count++;
-            }
-        }
-        saveTable();
-        return "[OK] Updated " + count + " rows.";
     }
 
     public String select(ArrayList<String> columns, String conditionStr) {
         Expression condition = new Expression(conditionStr);
         List<ArrayList<String>> result = new ArrayList<>();
-        for (ArrayList<String> row : rows) {
-            if (condition.isConditionSatisfied(columnNames, row)) {
-                ArrayList<String> selectedRow = new ArrayList<>();
-                for (String column : columns) {
-                    int columnIndex = ToolUtils.getIndexIgnoreCase(column, columnNames);;
-                    if (columnIndex != -1) {
+        try {
+            for (String column : columns) {
+                if (ToolUtils.getIndexIgnoreCase(column, columnNames) == -1) {
+                    throw new IllegalArgumentException("[ERROR]: Attribute in condition does not exist");
+                }
+            }
+            for (ArrayList<String> row : rows) {
+
+                if (condition.isConditionSatisfied(columnNames, row)) {
+                    ArrayList<String> selectedRow = new ArrayList<>();
+                    for (String column : columns) {
+                        int columnIndex = ToolUtils.getIndexIgnoreCase(column, columnNames);
                         selectedRow.add(row.get(columnIndex));
                     }
+                    result.add(selectedRow);
                 }
-                result.add(selectedRow);
             }
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
         }
         return ToolUtils.printTable(columns, result);
     }
