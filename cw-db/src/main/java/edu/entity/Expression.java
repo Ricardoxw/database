@@ -1,5 +1,6 @@
 package edu.entity;
 
+import edu.constant.Constants;
 import edu.constant.ExpressionType;
 import edu.utils.ToolUtils;
 
@@ -14,8 +15,16 @@ public class Expression {
     private ExpressionType type;
     private String value;
     private String column;
-    private static final String[] Comparators = {"==", ">=", "<=", "!=", ">", "<", "LIKE"};
-    private static final String[] BoolOperators = {"OR", "AND"};
+    private static final String[] Comparators = {
+            Constants.EQUAL_OPERATOR,
+            Constants.GREATER_THAN_OR_EQUAL_OPERATOR,
+            Constants.LESS_THAN_OR_EQUAL_OPERATOR,
+            Constants.NOT_EQUAL_OPERATOR,
+            Constants.GREATER_THAN_OPERATOR,
+            Constants.LESS_THAN_OPERATOR,
+            Constants.LIKE_OPERATOR
+    };
+    private static final String[] BoolOperators = {Constants.AND_OPERATOR, Constants.OR_OPERATOR};
 
     public Expression(String expressionStr) {
         this.expressionStr = expressionStr;
@@ -31,9 +40,9 @@ public class Expression {
 
     public void parse(String conditionStr) {
         conditionStr = conditionStr.trim().replaceAll("\\s+", " ");
-        if(conditionStr.isEmpty()||conditionStr.equals(" ")){
+        if (conditionStr.isEmpty() || conditionStr.equals(" ")) {
             this.expressionStr = "";
-            this.value = "TRUE";
+            this.value = Constants.TRUE;
             this.type = ExpressionType.VALUE;
             return;
         }
@@ -43,7 +52,7 @@ public class Expression {
                 this.left = new Expression(formatSubExpression(conditionStr.substring(0, index).trim()));
                 this.operator = op;
                 this.right = new Expression(formatSubExpression(conditionStr.substring(index + op.length() + 1).trim()));
-                this.type = op.equals("AND") ? ExpressionType.AND_EXPRESSION : ExpressionType.OR_EXPRESSION;
+                this.type = op.equals(Constants.AND_OPERATOR) ? ExpressionType.AND_EXPRESSION : ExpressionType.OR_EXPRESSION;
                 return;
             }
         }
@@ -61,9 +70,9 @@ public class Expression {
 
         if (conditionStr.matches("'.*'") // str
                 || ToolUtils.isNumeric(conditionStr) // numeric
-                || conditionStr.equalsIgnoreCase("true") // boolean
-                || conditionStr.equalsIgnoreCase("false")
-                || conditionStr.equalsIgnoreCase("null")) {
+                || conditionStr.equalsIgnoreCase(Constants.TRUE) // boolean
+                || conditionStr.equalsIgnoreCase(Constants.FALSE)
+                || conditionStr.equalsIgnoreCase(Constants.NULL)) {
             this.value = conditionStr;
             this.type = ExpressionType.VALUE;
             return;
@@ -71,6 +80,7 @@ public class Expression {
 
         if (conditionStr.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
             this.column = conditionStr;
+            ToolUtils.checkConditionColumnValid(this.column);
             this.type = ExpressionType.COLUMN;
             return;
         }
@@ -135,22 +145,23 @@ public class Expression {
             case COMPARISON_EXPRESSION:
                 int columnIndex = ToolUtils.getIndexIgnoreCase(left.getColumn(), columnNames);
                 if (columnIndex == -1)
-                    throw new IllegalArgumentException("[ERROR]: Attribute does not exist");
+                    throw new IllegalArgumentException("Attribute does not exist");
                 String rowValue = row.get(columnIndex);
-                if(validateExpressionValue(right)){
+                if (validateExpressionValue(right)) {
                     return compareRowValueWithConditionValue(rowValue, right.getValue(), operator);
-                }else{
-                    throw new IllegalArgumentException("[ERROR]: Condition value is not valid");
+                } else {
+                    throw new IllegalArgumentException("Condition value is not valid");
                 }
             case VALUE:
-                return value.equals("TRUE");
+                return value.equals(Constants.TRUE);
         }
         return false;
     }
 
     public static boolean validateExpressionValue(Expression expression) {
         String expressionValue = expression.getValue();
-        if ("true".equalsIgnoreCase(expressionValue) || "false".equalsIgnoreCase(expressionValue)) {
+        if (Constants.TRUE.equalsIgnoreCase(expressionValue) || Constants.FALSE.equalsIgnoreCase(expressionValue)) {
+            expression.setValue(expressionValue.toUpperCase());
             return true;
         }
         try {
@@ -158,7 +169,6 @@ public class Expression {
             return true;
         } catch (NumberFormatException e) {
             if (expressionValue.startsWith("'") && expressionValue.endsWith("'")) {
-                expression.setValue(expressionValue.substring(1, expressionValue.length() - 1));
                 return true;
             } else {
                 return false;
@@ -168,26 +178,30 @@ public class Expression {
 
     public static boolean compareRowValueWithConditionValue(String rowValue, String conditionValue, String operator) {
 
-        if (operator.equalsIgnoreCase("LIKE")) {
-            return ToolUtils.checkLikeCondition(rowValue,0, conditionValue,0);
+        if (operator.equalsIgnoreCase(Constants.LIKE_OPERATOR)) {
+//            return ToolUtils.checkLikeCondition(rowValue, 0, conditionValue, 0);
+            return ToolUtils.like(rowValue, conditionValue);
         }
 
         try {
             double rowNum = Double.parseDouble(rowValue);
             double conditionNum = Double.parseDouble(conditionValue);
             return switch (operator) {
-                case "==" -> rowNum == conditionNum;
-                case ">" -> rowNum > conditionNum;
-                case "<" -> rowNum < conditionNum;
-                case ">=" -> rowNum >= conditionNum;
-                case "<=" -> rowNum <= conditionNum;
-                case "!=" -> rowNum != conditionNum;
+                case Constants.EQUAL_OPERATOR -> rowNum == conditionNum;
+                case Constants.GREATER_THAN_OPERATOR -> rowNum > conditionNum;
+                case Constants.LESS_THAN_OPERATOR -> rowNum < conditionNum;
+                case Constants.GREATER_THAN_OR_EQUAL_OPERATOR -> rowNum >= conditionNum;
+                case Constants.LESS_THAN_OR_EQUAL_OPERATOR -> rowNum <= conditionNum;
+                case Constants.NOT_EQUAL_OPERATOR -> rowNum != conditionNum;
                 default -> throw new IllegalArgumentException("Unsupported operator: " + operator);
             };
         } catch (NumberFormatException e) {
-            if (operator.equals("==")) {
+            if (!conditionValue.equalsIgnoreCase(Constants.TRUE) && !conditionValue.equalsIgnoreCase(Constants.FALSE)) {
+                rowValue = "'" + rowValue + "'";
+            }
+            if (operator.equals(Constants.EQUAL_OPERATOR)) {
                 return rowValue.equals(conditionValue);
-            }else if (operator.equals("!=")) {
+            } else if (operator.equals(Constants.NOT_EQUAL_OPERATOR)) {
                 return !rowValue.equals(conditionValue);
             }
             throw new IllegalArgumentException("Unsupported operator: " + operator);

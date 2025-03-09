@@ -1,5 +1,6 @@
 package edu.entity;
 
+import edu.constant.Constants;
 import edu.uob.DBServer;
 import edu.utils.ToolUtils;
 
@@ -14,7 +15,8 @@ import java.util.List;
 public class Database {
     private HashMap<String, Table> tables;
     private String name;
-    private static String storagePath = Paths.get("databases").toAbsolutePath().toString();;
+    private static String storagePath = Paths.get("databases").toAbsolutePath().toString();
+    ;
 
     //lazy loading
     public Database(String dbName, String filePath) {
@@ -31,14 +33,13 @@ public class Database {
         File dbFolder = new File(dbFolderPath);
         if (dbFolder.exists()) {
             if (ToolUtils.deleteDirectory(dbFolder)) {
-                return "[OK] Database dropped: " + dbName;
+                throw new IllegalArgumentException("Database dropped: " + dbName);
             } else {
-                return "[ERROR] Failed to delete database folder: " + dbName;
+                throw new IllegalArgumentException("Failed to delete database folder: " + dbName);
             }
         } else {
-            return "[ERROR] Database does not exist: " + dbName;
+            throw new IllegalArgumentException("Database does not exist: " + dbName);
         }
-
     }
 
     public static boolean isExistDataBase(String dbName) {
@@ -60,7 +61,7 @@ public class Database {
         File tableFile = new File(tableFilePath);
 
         if (tableFile.exists()) {
-            return "[ERROR] Failed to create table file: " + tableName + ", the table already exists.";
+            throw new IllegalArgumentException("Attempting to create a table using a name that already exists");
         }
 
         try (FileWriter writer = new FileWriter(tableFile)) {
@@ -74,23 +75,23 @@ public class Database {
             }
             writer.write("\n");
         } catch (IOException e) {
-            return "[ERROR] Failed to create table file: " + e.getMessage();
+            throw new IllegalArgumentException("Failed to create table file: " + e.getMessage());
         }
 
-        return "[OK] Table created: " + tableName;
+        return Constants.SUCCESS_STATUS;
     }
 
     public Table getTable(String tableName) throws IOException {
         tableName = tableName.toLowerCase().trim();
         String tableFilePath = storagePath + File.separator + tableName + ".tab";
         File tableFile = new File(tableFilePath);
-        if(tables.containsKey(tableName)) {
+        if (tables.containsKey(tableName)) {
             return tables.get(tableName);
-        }else if(tableFile.exists()) {
+        } else if (tableFile.exists()) {
             this.tables.put(tableName, Table.loadTable(tableName, tableFilePath));
             return tables.get(tableName);
-        }else{
-            return null;
+        } else {
+            throw new IllegalArgumentException("Table does not exist: " + tableName);
         }
     }
 
@@ -102,22 +103,23 @@ public class Database {
         int index2 = ToolUtils.getIndexIgnoreCase(column2, columnsT2);
 
         if (index1 == -1 || index2 == -1) {
-            return "[ERROR] Join columns not found.";
+            throw new IllegalArgumentException("Join columns not found.");
         }
 
         ArrayList<String> resultColumns = new ArrayList<>();
-        for (String column : columnsT2) {
-            if (!column.equals(column1)) {
+        resultColumns.add("id");
+
+        for (String column : columnsT1) {
+            if (!column.equals(column1) && !column.equals("id")) {
                 resultColumns.add(table1.getTableName() + "." + column);
             }
         }
         for (String column : columnsT2) {
-            if (!column.equals(column2)) {
+            if (!column.equals(column2) && !column.equals("id")) {
                 resultColumns.add(table2.getTableName() + "." + column);
             }
         }
 
-        resultColumns.add("id");
 
         List<ArrayList<String>> resultRows = new ArrayList<>();
         List<ArrayList<String>> rows1 = table1.getRows();
@@ -146,7 +148,7 @@ public class Database {
         return ToolUtils.printTable(resultColumns, resultRows);
     }
 
-    public String remove(String tableName) throws IOException {
+    public String remove(String tableName) throws Exception {
         tableName = tableName.toLowerCase().trim();
         Table table = getTable(tableName);
         tables.remove(tableName);

@@ -1,9 +1,9 @@
 package edu.utils;
 
+import edu.constant.Constants;
+
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class ToolUtils {
     public static String printTable(ArrayList<String> columns, List<ArrayList<String>> rows) {
@@ -60,6 +60,13 @@ public class ToolUtils {
         return source.toLowerCase().indexOf(target.toLowerCase());
     }
 
+    public static boolean like(String value, String pattern) {
+        if (pattern.startsWith("'") && pattern.endsWith("'")) {
+            pattern = pattern.substring(1, pattern.length() - 1);
+        }
+        return value.contains(pattern);
+    }
+
     public static boolean checkLikeCondition(String rowValue, int rowIndex, String conditionValue, int conditionIndex) {
         if (conditionIndex == conditionValue.length()) {
             return rowValue.length() == rowIndex;
@@ -88,4 +95,53 @@ public class ToolUtils {
         return checkLikeCondition(rowValue, rowIndex + 1, conditionValue, conditionIndex + 1);
     }
 
+    public static void checkColumnValid(String columnName) {
+        if(Constants.SQL_KEYWORDS.contains(columnName.toUpperCase())){
+            throw new IllegalArgumentException(columnName + " is a keyword of SQL.");
+        }
+    }
+
+    public static void checkConditionColumnValid(String columnName) {
+        if(Constants.SQL_KEYWORDS.contains(columnName.toUpperCase())){
+            throw new IllegalArgumentException("Condition has a column named '" + columnName + "' which is an SQL keyword.");
+        }
+    }
+
+    public static void checkColumnsValid(String[] columns) {
+        for (String column : columns) {
+            checkColumnValid(column.trim());
+        }
+    }
+
+    public static void checkColumnsValid(List<String> columns) {
+        for (String column : columns) {
+            checkColumnValid(column.trim());
+        }
+    }
+
+    public static boolean checkColumnEqualsId(String column) {
+        if(column.equalsIgnoreCase("id")){
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean checkColumnsContainsId(String[] columns) {
+        for (String column : columns) {
+            if(checkColumnEqualsId(column)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean checkColumnsUnique(String[] columns) {
+        Set<String> set = new HashSet<>();
+        for (String column : columns) {
+            if (!set.add(column)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

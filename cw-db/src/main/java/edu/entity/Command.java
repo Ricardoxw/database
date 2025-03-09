@@ -1,10 +1,9 @@
 package edu.entity;
 
 import edu.constant.CommandType;
+import edu.constant.Constants;
 import edu.uob.DBServer;
 import edu.utils.Executor;
-
-import java.io.IOException;
 
 
 public class Command {
@@ -15,14 +14,14 @@ public class Command {
         String trimmedSQL = content.trim().replaceAll("\\s+", " ");
 
         if (!trimmedSQL.endsWith(";")) {
-            throw new IllegalArgumentException("[ERROR]: Semi colon missing at end of line");
+            throw new IllegalArgumentException("Semi colon missing at end of line");
         }
 
         this.sql = trimmedSQL.substring(0, trimmedSQL.length() - 1);
         this.type = getCommandType(this.sql);
     }
 
-    public String execute(DBServer dbServer) throws IOException {
+    public String execute(DBServer dbServer) throws Exception {
         return switch (type) {
             case USE -> Executor.use(sql, dbServer);
             case CREATE_DATABASE -> Executor.createDatabase(sql, dbServer);
@@ -36,7 +35,7 @@ public class Command {
             case ALTER_TABLE_ADD -> Executor.alterTableAdd(sql, dbServer);
             case ALTER_TABLE_DROP -> Executor.alterTableDrop(sql, dbServer);
             case JOIN -> Executor.join(sql, dbServer);
-            default -> "[ERROR] Unknown command type: " + type;
+            default -> throw new IllegalArgumentException("Unknown command type: " + type);
         };
     }
 
@@ -44,38 +43,38 @@ public class Command {
         String type = sql.split(" ")[0].toUpperCase();
         String upperSql = sql.toUpperCase();
         switch (type) {
-            case "USE":
+            case Constants.USE:
                 return CommandType.USE;
-            case "CREATE":
+            case Constants.CREATE:
                 if (upperSql.contains("DATABASE")) {
                     return CommandType.CREATE_DATABASE;
                 } else if (upperSql.contains("TABLE")) {
                     return CommandType.CREATE_TABLE;
                 }
                 break;
-            case "DROP":
+            case Constants.DROP:
                 if (upperSql.contains("DATABASE")) {
                     return CommandType.DROP_DATABASE;
                 } else if (upperSql.contains("TABLE")) {
                     return CommandType.DROP_TABLE;
                 }
                 break;
-            case "ALTER":
+            case Constants.ALTER:
                 if (upperSql.contains("ADD")) {
                     return CommandType.ALTER_TABLE_ADD;
                 } else if (upperSql.contains("DROP")) {
                     return CommandType.ALTER_TABLE_DROP;
                 }
                 break;
-            case "INSERT":
+            case Constants.INSERT:
                 return CommandType.INSERT;
-            case "SELECT":
+            case Constants.SELECT:
                 return CommandType.SELECT;
-            case "UPDATE":
+            case Constants.UPDATE:
                 return CommandType.UPDATE;
-            case "DELETE":
+            case Constants.DELETE:
                 return CommandType.DELETE;
-            case "JOIN":
+            case Constants.JOIN:
                 return CommandType.JOIN;
             default:
                 throw new IllegalArgumentException("Unknown SQL command: " + sql);

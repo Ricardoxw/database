@@ -1,20 +1,18 @@
 package edu.uob;
 
+import edu.constant.Constants;
 import edu.entity.Command;
 import edu.entity.Database;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 
-/** This class implements the DB server. */
+/**
+ * This class implements the DB server.
+ */
 public class DBServer {
 
     private static final char END_OF_TRANSMISSION = 4;
@@ -43,33 +41,34 @@ public class DBServer {
     }
 
     /**
-    * KEEP this signature otherwise we won't be able to mark your submission correctly.
-    */
+     * KEEP this signature otherwise we won't be able to mark your submission correctly.
+     */
     public DBServer() {
         storageFolderPath = Paths.get("databases").toAbsolutePath().toString();
         System.out.println("Database folder path: " + storageFolderPath);
         try {
             // Create the database storage folder if it doesn't already exist !
             Files.createDirectories(Paths.get(storageFolderPath));
-        } catch(IOException ioe) {
+            handleCommand("USE markbook;");
+        } catch (IOException ioe) {
             System.out.println("Can't seem to create database storage folder " + storageFolderPath);
         }
     }
 
     /**
-    * KEEP this signature (i.e. {@code edu.uob.DBServer.handleCommand(String)}) otherwise we won't be
-    * able to mark your submission correctly.
-    *
-    * <p>This method handles all incoming DB commands and carries out the required actions.
-    */
+     * KEEP this signature (i.e. {@code edu.uob.DBServer.handleCommand(String)}) otherwise we won't be
+     * able to mark your submission correctly.
+     *
+     * <p>This method handles all incoming DB commands and carries out the required actions.
+     */
     public String handleCommand(String commandStr) {
         // TODO implement your server logic here
         String result = "";
-        try{
-            Command comand = new Command(commandStr);
-            result = comand.execute(this);
-        }catch (Exception e){
-            System.out.println(e.getMessage());
+        try {
+            Command command = new Command(commandStr);
+            result = command.execute(this);
+        } catch (Exception e) {
+            result = Constants.FAILURE_STATUS + ": " + e.getMessage();
         }
         return result;
     }
@@ -93,8 +92,8 @@ public class DBServer {
 
     private void blockingHandleConnection(ServerSocket serverSocket) throws IOException {
         try (Socket s = serverSocket.accept();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()))) {
+             BufferedReader reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()))) {
 
             System.out.println("Connection established: " + serverSocket.getInetAddress());
             while (!Thread.interrupted()) {

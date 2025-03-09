@@ -2,6 +2,7 @@ package edu.utils;
 
 
 import edu.constant.CommandType;
+import edu.constant.Constants;
 
 public class SqlParser {
 
@@ -19,7 +20,7 @@ public class SqlParser {
             case ALTER_TABLE_ADD -> parseAlterTableAdd(sql);
             case ALTER_TABLE_DROP -> parseAlterTableDrop(sql);
             case JOIN -> parseJoin(sql);
-            default -> throw new IllegalArgumentException("[ERROR] Unknown SQL command type: " + type);
+            default -> throw new IllegalArgumentException("Unknown SQL command type: " + type);
         };
     }
 
@@ -82,7 +83,7 @@ public class SqlParser {
 
     //UPDATE marks SET mark = 38 WHERE name == 'Chris';
     private static String[] parseUpdate(String sql) {
-        int updateIndex = ToolUtils.indexOfIgnoreCase(sql, "UPDATE");
+        int updateIndex = ToolUtils.indexOfIgnoreCase(sql, Constants.UPDATE);
         int setIndex = ToolUtils.indexOfIgnoreCase(sql, "SET");
         String tableName = sql.substring(updateIndex + 6, setIndex).trim();
 
@@ -106,7 +107,8 @@ public class SqlParser {
     private static String[] parseDelete(String sql) {
 
         int tableNameIndex = ToolUtils.indexOfIgnoreCase(sql, "FROM") + 5;
-        int whereIndex = ToolUtils.indexOfIgnoreCase(sql, "WHERE");;
+        int whereIndex = ToolUtils.indexOfIgnoreCase(sql, "WHERE");
+        ;
 
         String tableName;
         if (whereIndex != -1) {
@@ -159,15 +161,15 @@ public class SqlParser {
     //JOIN coursework AND marks ON submission AND id;
     private static String[] parseJoin(String sql) {
         sql = sql.trim().toUpperCase().trim();
-        int joinIndex = sql.indexOf("JOIN");
+        int joinIndex = sql.indexOf(Constants.JOIN);
         int onIndex = sql.indexOf("ON");
         String tables = sql.substring(joinIndex + 5, onIndex).trim();
-        String[] tableNames = tables.split("AND", 2);
+        String[] tableNames = tables.split(Constants.AND_OPERATOR, 2);
         String table1 = tableNames[0].trim();
         String table2 = tableNames[1].trim();
 
         String columns = sql.substring(onIndex + 3).trim();
-        String[] columnNames = columns.split("AND", 2);
+        String[] columnNames = columns.split(Constants.AND_OPERATOR, 2);
         String column1 = columnNames[0].trim();
         String column2 = columnNames[1].trim();
 
