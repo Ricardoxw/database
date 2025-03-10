@@ -15,19 +15,18 @@ public class Database {
     private HashMap<String, Table> tables;
     private String name;
     private static String storagePath = Paths.get("databases").toAbsolutePath().toString();
-    ;
 
     //lazy loading
     public Database(String dbName, String filePath) {
         this.name = dbName.toLowerCase().trim();
-        this.storagePath = filePath;
+        storagePath = filePath;
         this.tables = new HashMap<>();
     }
 
     public static String dropDatabase(DBServer dbServer, String dbName) {
         dbName = dbName.toLowerCase().trim();
         Database db = new Database(dbName, dbServer.getStorageFolderPath());
-        String storagePath = db.storagePath;
+        String storagePath = dbServer.getStorageFolderPath();
         String dbFolderPath = storagePath + File.separator + dbName;
         File dbFolder = new File(dbFolderPath);
         if (dbFolder.exists()) {
