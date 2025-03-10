@@ -9,7 +9,6 @@ public class ToolUtils {
     public static String printTable(List<String> columns, List<ArrayList<String>> rows) {
         StringBuilder sb = new StringBuilder();
         sb.append(String.join("\t", columns)).append("\n");
-        sb.append("-".repeat(columns.size() * 10)).append("\n");
         for (ArrayList<String> row : rows) {
             sb.append(String.join("\t", row)).append("\n");
         }

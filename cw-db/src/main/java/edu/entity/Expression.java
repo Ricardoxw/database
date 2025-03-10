@@ -177,7 +177,7 @@ public class Expression {
     }
 
     public static boolean compareRowValueWithConditionValue(String rowValue, String conditionValue, String operator) {
-
+        rowValue = rowValue.trim();
         if (operator.equalsIgnoreCase(Constants.LIKE_OPERATOR)) {
 //            return ToolUtils.checkLikeCondition(rowValue, 0, conditionValue, 0);
             return ToolUtils.like(rowValue, conditionValue);

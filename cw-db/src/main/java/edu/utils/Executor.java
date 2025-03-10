@@ -123,7 +123,7 @@ public class Executor {
                 .filter(s -> !s.isEmpty())
                 .toArray(String[]::new);
         ToolUtils.checkColumnsValid(columns);
-        if (ToolUtils.checkColumnsUnique(columns)) {
+        if (!ToolUtils.checkColumnsUnique(columns)) {
             throw new IllegalArgumentException("Trying to add a column with an existing name");
         }
         Database db = dbServer.getDatabase();
