@@ -1,6 +1,5 @@
 package edu.entity;
 
-import edu.constant.Constants;
 import edu.utils.ToolUtils;
 
 import java.io.*;
@@ -17,14 +16,14 @@ public class Table {
 
     private String storagePath;
 
-    public static String dropTable(Table table){
+    public static String dropTable(Table table) {
         String storagePath = table.getStoragePath();
         String tableName = table.getTableName().toLowerCase().trim();
         File tableFile = new File(storagePath);
 
         if (tableFile.exists()) {
             if (tableFile.delete()) {
-                return Constants.SUCCESS_STATUS;
+                return "";
             } else {
                 throw new IllegalArgumentException("Failed to delete table file: " + tableName);
             }
@@ -128,7 +127,7 @@ public class Table {
         }
         rows.add(row);
         appendRowToFile(storagePath, row);
-        return Constants.SUCCESS_STATUS;
+        return "";
     }
 
     public String addColumns(ArrayList<String> columns) throws Exception {
@@ -143,7 +142,7 @@ public class Table {
             }
         }
         saveTable();
-        return Constants.SUCCESS_STATUS + ": " + "Add " + count + " columns.";
+        return "Add " + count + " columns.";
     }
 
     public String dropColumns(ArrayList<String> columns) throws Exception {
@@ -167,7 +166,7 @@ public class Table {
             }
         }
         saveTable();
-        return Constants.SUCCESS_STATUS + ": " + "Drop " + count + " columns.";
+        return "Drop " + count + " columns.";
     }
 
     public String delete(String conditionStr) throws Exception {
@@ -181,7 +180,7 @@ public class Table {
             }
         }
         saveTable();
-        return Constants.SUCCESS_STATUS + ": " + "Deleted " + count + " rows.";
+        return "Deleted " + count + " rows.";
     }
 
     public String update(String updatesStr, String conditionStr) throws Exception {
@@ -192,7 +191,7 @@ public class Table {
             String[] params = update.trim().split("=");
             String column = params[0].trim();
             ToolUtils.checkColumnValid(column);
-            if(ToolUtils.checkColumnEqualsId(column)){
+            if (ToolUtils.checkColumnEqualsId(column)) {
                 throw new IllegalArgumentException("Updating the ID of a record");
             }
             if (ToolUtils.getIndexIgnoreCase(column, columnNames) == -1) {
@@ -222,10 +221,10 @@ public class Table {
             }
         }
         saveTable();
-        return Constants.SUCCESS_STATUS + ": " + "Updated " + count + " rows.";
+        return "Updated " + count + " rows.";
     }
 
-    public String select(ArrayList<String> columns, String conditionStr){
+    public String select(List<String> columns, String conditionStr) {
         Expression condition = new Expression(conditionStr);
         List<ArrayList<String>> result = new ArrayList<>();
         for (String column : columns) {

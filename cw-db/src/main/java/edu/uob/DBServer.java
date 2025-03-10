@@ -66,7 +66,8 @@ public class DBServer {
         String result = "";
         try {
             Command command = new Command(commandStr);
-            result = command.execute(this);
+            result = result + Constants.SUCCESS_STATUS + "\n";
+            result += command.execute(this);
         } catch (Exception e) {
             result = Constants.FAILURE_STATUS + ": " + e.getMessage();
         }

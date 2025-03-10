@@ -198,7 +198,10 @@ public class Expression {
         } catch (NumberFormatException e) {
             if (!conditionValue.equalsIgnoreCase(Constants.TRUE) && !conditionValue.equalsIgnoreCase(Constants.FALSE)) {
                 rowValue = "'" + rowValue + "'";
+            } else {
+                return rowValue.equalsIgnoreCase(conditionValue);
             }
+
             if (operator.equals(Constants.EQUAL_OPERATOR)) {
                 return rowValue.equals(conditionValue);
             } else if (operator.equals(Constants.NOT_EQUAL_OPERATOR)) {

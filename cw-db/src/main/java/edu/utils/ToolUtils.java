@@ -6,7 +6,7 @@ import java.io.File;
 import java.util.*;
 
 public class ToolUtils {
-    public static String printTable(ArrayList<String> columns, List<ArrayList<String>> rows) {
+    public static String printTable(List<String> columns, List<ArrayList<String>> rows) {
         StringBuilder sb = new StringBuilder();
         sb.append(String.join("\t", columns)).append("\n");
         sb.append("-".repeat(columns.size() * 10)).append("\n");
@@ -96,13 +96,13 @@ public class ToolUtils {
     }
 
     public static void checkColumnValid(String columnName) {
-        if(Constants.SQL_KEYWORDS.contains(columnName.toUpperCase())){
+        if (Constants.SQL_KEYWORDS.contains(columnName.toUpperCase())) {
             throw new IllegalArgumentException(columnName + " is a keyword of SQL.");
         }
     }
 
     public static void checkConditionColumnValid(String columnName) {
-        if(Constants.SQL_KEYWORDS.contains(columnName.toUpperCase())){
+        if (Constants.SQL_KEYWORDS.contains(columnName.toUpperCase())) {
             throw new IllegalArgumentException("Condition has a column named '" + columnName + "' which is an SQL keyword.");
         }
     }
@@ -120,7 +120,7 @@ public class ToolUtils {
     }
 
     public static boolean checkColumnEqualsId(String column) {
-        if(column.equalsIgnoreCase("id")){
+        if (column.equalsIgnoreCase("id")) {
             return true;
         }
         return false;
@@ -128,7 +128,7 @@ public class ToolUtils {
 
     public static boolean checkColumnsContainsId(String[] columns) {
         for (String column : columns) {
-            if(checkColumnEqualsId(column)){
+            if (checkColumnEqualsId(column)) {
                 return true;
             }
         }
@@ -144,4 +144,5 @@ public class ToolUtils {
         }
         return true;
     }
+
 }

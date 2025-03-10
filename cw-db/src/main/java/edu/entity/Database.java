@@ -1,6 +1,5 @@
 package edu.entity;
 
-import edu.constant.Constants;
 import edu.uob.DBServer;
 import edu.utils.ToolUtils;
 
@@ -33,7 +32,7 @@ public class Database {
         File dbFolder = new File(dbFolderPath);
         if (dbFolder.exists()) {
             if (ToolUtils.deleteDirectory(dbFolder)) {
-                throw new IllegalArgumentException("Database dropped: " + dbName);
+                return "Database dropped: " + dbName;
             } else {
                 throw new IllegalArgumentException("Failed to delete database folder: " + dbName);
             }
@@ -42,9 +41,9 @@ public class Database {
         }
     }
 
-    public static boolean isExistDataBase(String dbName) {
+    public static boolean isExistDataBase(DBServer dbServer, String dbName) {
         dbName = dbName.toLowerCase().trim();
-        String databasePath = storagePath + File.separator + dbName;
+        String databasePath = dbServer.getStorageFolderPath() + File.separator + dbName;
         File dbDirectory = new File(databasePath);
         return dbDirectory.exists() && dbDirectory.isDirectory();
     }
@@ -78,7 +77,7 @@ public class Database {
             throw new IllegalArgumentException("Failed to create table file: " + e.getMessage());
         }
 
-        return Constants.SUCCESS_STATUS;
+        return "";
     }
 
     public Table getTable(String tableName) throws IOException {

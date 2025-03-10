@@ -2,13 +2,13 @@ package edu.utils;
 
 
 import edu.constant.CommandType;
-import edu.constant.Constants;
 import edu.entity.Database;
 import edu.entity.Table;
 import edu.uob.DBServer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,12 +16,13 @@ public class Executor {
     public static String use(String sql, DBServer dbServer) throws Exception {
         String[] params = SqlParser.parseSQL(CommandType.USE, sql);
         String dbName = params[0].toLowerCase().trim();
-        if (Database.isExistDataBase(dbName)) {
+        if (Database.isExistDataBase(dbServer, dbName)) {
             Database db = new Database(dbName, dbServer.getStorageFolderPath() + File.separator + dbName);
             dbServer.setDatabase(db);
-            return Constants.SUCCESS_STATUS;
+            return "";
+        } else {
+            throw new IllegalArgumentException("Database " + dbName + " does not exist");
         }
-        throw new IllegalArgumentException("Database " + dbName + " does not exist");
     }
 
     public static String createDatabase(String sql, DBServer dbServer) throws Exception {
@@ -30,7 +31,7 @@ public class Executor {
         File storageFolder = new File(dbServer.getStorageFolderPath() + File.separator + dbName);
         if (!storageFolder.exists()) {
             storageFolder.mkdirs();
-            return Constants.SUCCESS_STATUS;
+            return "";
         } else {
             throw new IllegalArgumentException("Attempting to create a database that already exists");
         }
@@ -39,8 +40,12 @@ public class Executor {
     public static String createTable(String sql, DBServer dbServer) throws Exception {
         String[] params = SqlParser.parseSQL(CommandType.CREATE_TABLE, sql);
         String tableName = params[0];
-        String[] columns = params[1].split(",");
-        if(ToolUtils.checkColumnsUnique(columns)) {
+        String[] columns = Arrays.stream(params[1].split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toArray(String[]::new);
+
+        if (!ToolUtils.checkColumnsUnique(columns)) {
             throw new IllegalArgumentException("Creating a table with duplicate column names");
         }
         ToolUtils.checkColumnsValid(columns);
@@ -54,20 +59,25 @@ public class Executor {
         String[] values = params[1].split(",");
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
+        if(values.length != table.getColumnNames().size() - 1) {
+            throw new IllegalArgumentException("Trying to insert too many (or too few) values into a table entry");
+        }
         return table.insert(new ArrayList<>(List.of(values)));
     }
 
     public static String select(String sql, DBServer dbServer) throws Exception {
         String[] params = SqlParser.parseSQL(CommandType.SELECT, sql);
         String tableName = params[0];
-        ArrayList<String> columns;
+        List<String> columns;
         String condition = params[2];
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
         if (Objects.equals(params[1], "*")) {
             columns = dbServer.getDatabase().getTable(tableName).getColumnNames();
         } else {
-            columns = new ArrayList<>(List.of(params[1].split(",")));
+            columns = Arrays.stream(params[1].split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty()).toList();
         }
         ToolUtils.checkColumnsValid(columns);
         return table.select(columns, condition);
@@ -108,9 +118,12 @@ public class Executor {
     public static String alterTableAdd(String sql, DBServer dbServer) throws Exception {
         String[] params = SqlParser.parseSQL(CommandType.ALTER_TABLE_ADD, sql);
         String tableName = params[0];
-        String[] columns = params[1].split(",");
+        String[] columns = Arrays.stream(params[1].split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toArray(String[]::new);
         ToolUtils.checkColumnsValid(columns);
-        if(ToolUtils.checkColumnsUnique(columns)) {
+        if (ToolUtils.checkColumnsUnique(columns)) {
             throw new IllegalArgumentException("Trying to add a column with an existing name");
         }
         Database db = dbServer.getDatabase();
@@ -121,9 +134,12 @@ public class Executor {
     public static String alterTableDrop(String sql, DBServer dbServer) throws Exception {
         String[] params = SqlParser.parseSQL(CommandType.ALTER_TABLE_DROP, sql);
         String tableName = params[0];
-        String[] columns = params[1].split(",");
+        String[] columns = Arrays.stream(params[1].split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toArray(String[]::new);
         ToolUtils.checkColumnsValid(columns);
-        if(ToolUtils.checkColumnsContainsId(columns)){
+        if (ToolUtils.checkColumnsContainsId(columns)) {
             throw new IllegalArgumentException("Attempting to remove the ID column from a table");
         }
         Database db = dbServer.getDatabase();
@@ -144,7 +160,6 @@ public class Executor {
         Table table2 = db.getTable(tableName2);
         return db.joinTables(table1, table2, column1, column2);
     }
-
 
 
 }
