@@ -33,11 +33,11 @@ public class Expression {
 
     public String formatSubExpressionForComparator(String str, boolean isLeft) {
         str = str.trim();
-        while (str.startsWith("(")&&isLeft){
+        while (str.startsWith("(") && isLeft) {
             str = str.substring(1);
         }
-        while (str.endsWith(")")){
-            str = str.substring(0, str.length()-1);
+        while (str.endsWith(")")) {
+            str = str.substring(0, str.length() - 1);
         }
         formatSubExpression(str);
         return str.trim();
@@ -73,9 +73,9 @@ public class Expression {
         for (String op : Comparators) {
             int index = conditionStr.indexOf(op);
             if (index != -1) {
-                this.left = new Expression(formatSubExpressionForComparator(conditionStr.substring(0, index),true));
+                this.left = new Expression(formatSubExpressionForComparator(conditionStr.substring(0, index), true));
                 this.operator = op;
-                this.right = new Expression(formatSubExpressionForComparator(conditionStr.substring(index + op.length()),false));
+                this.right = new Expression(formatSubExpressionForComparator(conditionStr.substring(index + op.length()), false));
                 this.type = ExpressionType.COMPARISON_EXPRESSION;
                 return;
             }

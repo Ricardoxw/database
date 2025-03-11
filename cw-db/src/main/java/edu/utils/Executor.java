@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class Executor {
     public static String use(String sql, DBServer dbServer) throws Exception {
@@ -50,7 +49,7 @@ public class Executor {
             throw new IllegalArgumentException("Creating a table with duplicate column names");
         }
         ToolUtils.checkColumnsValid(columns);
-        if(ToolUtils.checkColumnsContainsId(columns)){
+        if (ToolUtils.checkColumnsContainsId(columns)) {
             List<String> filteredColumns = Arrays.stream(columns)
                     .filter(column -> !column.equalsIgnoreCase("id"))
                     .toList();
@@ -66,7 +65,7 @@ public class Executor {
         String[] values = params[1].split(",");
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
-        if(values.length != table.getColumnNames().size() - 1) {
+        if (values.length != table.getColumnNames().size() - 1) {
             throw new IllegalArgumentException("Trying to insert too many (or too few) values into a table entry");
         }
         return table.insert(new ArrayList<>(List.of(values)));
