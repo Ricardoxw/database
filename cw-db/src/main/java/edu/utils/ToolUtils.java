@@ -42,7 +42,7 @@ public class ToolUtils {
         long timestamp = System.currentTimeMillis();
         int timePart = (int) (timestamp % 1000000);
         int random = new Random().nextInt(100);
-        return random + String.valueOf(timePart);
+        return String.valueOf(timePart)+random;
     }
 
     public static int getIndexIgnoreCase(String column, ArrayList<String> columns) {

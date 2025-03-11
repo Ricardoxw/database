@@ -120,9 +120,9 @@ public class Table {
             Expression expression = new Expression(value);
             if (Expression.validateExpressionValue(expression)) {
                 if (value.startsWith("'") && value.endsWith("'")) {
-                    value = value.substring(1, value.length() - 1);
+                    value = value.substring(1, value.length() - 1).trim();
                 }
-                row.add(value);
+                row.add(value.trim());
             }
         }
         rows.add(row);
