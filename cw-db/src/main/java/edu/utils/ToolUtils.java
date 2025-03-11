@@ -41,8 +41,8 @@ public class ToolUtils {
     public static String generateId() {
         long timestamp = System.currentTimeMillis();
         int timePart = (int) (timestamp % 1000000);
-        int random = new Random().nextInt(10);
-        return String.valueOf(timePart) + random;
+        int random = new Random().nextInt(100);
+        return random + String.valueOf(timePart);
     }
 
     public static int getIndexIgnoreCase(String column, ArrayList<String> columns) {
