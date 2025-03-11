@@ -65,6 +65,7 @@ public class DBServer {
         String result = "";
         try {
             Command command = new Command(commandStr);
+            // If execute return without exception then print [OK] and if command is a select or join sql, it will append select result.
             result = result + Constants.SUCCESS_STATUS + "\n";
             result += command.execute(this);
         } catch (Exception e) {

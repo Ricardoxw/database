@@ -53,12 +53,15 @@ public class Expression {
 
     public void parse(String conditionStr) {
         conditionStr = conditionStr.trim().replaceAll("\\s+", " ");
+        // Empty condition will execute as TRUE
         if (conditionStr.isEmpty() || conditionStr.equals(" ")) {
             this.expressionStr = "";
             this.value = Constants.TRUE;
             this.type = ExpressionType.VALUE;
             return;
         }
+        // Expression recursion should be parsed until the expression type is ExpressionType.VALUE or ExpressionType.COLUMN
+        // 'and' 'or' condition should be recursion parsed, left and right are conditions, too.
         for (String op : BoolOperators) {
             int index = conditionStr.toUpperCase().indexOf(" " + op + " ");
             if (index != -1) {
@@ -69,7 +72,7 @@ public class Expression {
                 return;
             }
         }
-
+        // >,<,==,!= should put the column in left, put the value in right
         for (String op : Comparators) {
             int index = conditionStr.indexOf(op);
             if (index != -1) {
@@ -80,7 +83,7 @@ public class Expression {
                 return;
             }
         }
-
+        // Constant should be put in value
         if (conditionStr.matches("'.*'") // str
                 || ToolUtils.isNumeric(conditionStr) // numeric
                 || conditionStr.equalsIgnoreCase(Constants.TRUE) // boolean
@@ -90,7 +93,7 @@ public class Expression {
             this.type = ExpressionType.VALUE;
             return;
         }
-
+        // Column name should be put in column
         if (conditionStr.matches("[a-zA-Z_][a-zA-Z0-9_]*")) {
             this.column = conditionStr;
             ToolUtils.checkConditionColumnValid(this.column);
@@ -151,6 +154,7 @@ public class Expression {
 
     public boolean isConditionSatisfied(ArrayList<String> columnNames, ArrayList<String> row) {
         switch (this.type) {
+            //for and and or expression, recursion the function until expression is a comparison expression or value expression
             case AND_EXPRESSION:
                 return left.isConditionSatisfied(columnNames, row) && right.isConditionSatisfied(columnNames, row);
             case OR_EXPRESSION:
@@ -170,7 +174,7 @@ public class Expression {
         }
         return false;
     }
-
+    // Value can only be TRUE FALSE 'aaa' 1.23124, if there is a string like a1231, it's invalid value
     public static boolean validateExpressionValue(Expression expression) {
         String expressionValue = expression.getValue();
         if (Constants.TRUE.equalsIgnoreCase(expressionValue) || Constants.FALSE.equalsIgnoreCase(expressionValue)) {
@@ -191,12 +195,14 @@ public class Expression {
 
     public static boolean compareRowValueWithConditionValue(String rowValue, String conditionValue, String operator) {
         rowValue = rowValue.trim();
+        // validate like condition
         if (operator.equalsIgnoreCase(Constants.LIKE_OPERATOR)) {
 //            return ToolUtils.checkLikeCondition(rowValue, 0, conditionValue, 0);
             return ToolUtils.like(rowValue, conditionValue);
         }
 
         try {
+            // validate BoolOperators condition
             double rowNum = Double.parseDouble(rowValue);
             double conditionNum = Double.parseDouble(conditionValue);
             return switch (operator) {
@@ -209,12 +215,13 @@ public class Expression {
                 default -> throw new IllegalArgumentException("Unsupported operator: " + operator);
             };
         } catch (NumberFormatException e) {
+            // compare string
             if (!conditionValue.equalsIgnoreCase(Constants.TRUE) && !conditionValue.equalsIgnoreCase(Constants.FALSE)) {
                 rowValue = "'" + rowValue + "'";
             } else {
                 return rowValue.equalsIgnoreCase(conditionValue);
             }
-
+            // compare the TRUE and FALSE
             if (operator.equals(Constants.EQUAL_OPERATOR)) {
                 return rowValue.equals(conditionValue);
             } else if (operator.equals(Constants.NOT_EQUAL_OPERATOR)) {

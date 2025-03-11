@@ -150,6 +150,4 @@ public class MyDBTests {
         sendCommandToServer("DROP DATABASE " + randomName + ";");
     }
 
-
-
 }

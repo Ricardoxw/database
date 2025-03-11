@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Executor {
+    //Executor is a class used to manage the execution process of the entire SQL, mainly including parameter parsing and validity checking, and method calls in Table.
     public static String use(String sql, DBServer dbServer) throws Exception {
         String[] params = SqlParser.parseSQL(CommandType.USE, sql);
         String dbName = params[0].toLowerCase().trim();

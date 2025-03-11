@@ -38,13 +38,15 @@ public class ToolUtils {
         }
     }
 
+    // generate unique id by timestamp and append a random number.
     public static String generateId() {
         long timestamp = System.currentTimeMillis();
         int timePart = (int) (timestamp % 1000000);
         int random = new Random().nextInt(100);
-        return String.valueOf(timePart)+random;
+        return String.valueOf(timePart) + random;
     }
 
+    // compare column name ignore case
     public static int getIndexIgnoreCase(String column, ArrayList<String> columns) {
         return columns.stream()
                 .mapToInt(col -> col.equalsIgnoreCase(column) ? columns.indexOf(col) : -1)
@@ -60,6 +62,7 @@ public class ToolUtils {
         return source.toLowerCase().indexOf(target.toLowerCase());
     }
 
+    //just check that if value in pattern
     public static boolean like(String value, String pattern) {
         if (pattern.startsWith("'") && pattern.endsWith("'")) {
             pattern = pattern.substring(1, pattern.length() - 1);
@@ -67,6 +70,7 @@ public class ToolUtils {
         return value.contains(pattern);
     }
 
+    //complex like condition, I can use it parse condition like "%sim_n"
     public static boolean checkLikeCondition(String rowValue, int rowIndex, String conditionValue, int conditionIndex) {
         if (conditionIndex == conditionValue.length()) {
             return rowValue.length() == rowIndex;
@@ -107,6 +111,7 @@ public class ToolUtils {
         }
     }
 
+    // make sure that the columns is not a keyword of sql.
     public static void checkColumnsValid(String[] columns) {
         for (String column : columns) {
             checkColumnValid(column.trim());

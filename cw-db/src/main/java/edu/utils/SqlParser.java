@@ -7,6 +7,8 @@ import edu.constant.Constants;
 public class SqlParser {
 
     public static String[] parseSQL(CommandType type, String sql) {
+        // we parse the sql sentence by split the keywords
+        // and get the index of params then split params and return them
         return switch (type) {
             case USE -> parseUse(sql);
             case CREATE_DATABASE -> parseCreateDatabase(sql);

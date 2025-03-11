@@ -12,17 +12,18 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Database {
-    private HashMap<String, Table> tables;
+    private HashMap<String, Table> tables;  //tables in database
     private String name;
-    private static String storagePath = Paths.get("databases").toAbsolutePath().toString();
+    private static String storagePath = Paths.get("databases").toAbsolutePath().toString(); //database file dir
 
-    //lazy loading
+    //lazy loading for tables
     public Database(String dbName, String filePath) {
         this.name = dbName.toLowerCase().trim();
         storagePath = filePath;
         this.tables = new HashMap<>();
     }
 
+    //drop database is remove the dir and files under the dir
     public static String dropDatabase(DBServer dbServer, String dbName) {
         dbName = dbName.toLowerCase().trim();
         Database db = new Database(dbName, dbServer.getStorageFolderPath());
@@ -65,6 +66,7 @@ public class Database {
         try (FileWriter writer = new FileWriter(tableFile)) {
             writer.write("id");
             writer.write("\t");
+            // write the column names in first row
             for (int i = 0; i < columns.length; i++) {
                 writer.write(columns[i]);
                 if (i < columns.length - 1) {
@@ -78,7 +80,7 @@ public class Database {
 
         return "";
     }
-
+    //get table from map or file or return an exception
     public Table getTable(String tableName) throws IOException {
         tableName = tableName.toLowerCase().trim();
         String tableFilePath = storagePath + File.separator + tableName + ".tab";
@@ -103,10 +105,9 @@ public class Database {
         if (index1 == -1 || index2 == -1) {
             throw new IllegalArgumentException("Join columns not found.");
         }
-
+        // generate new table's columns
         ArrayList<String> resultColumns = new ArrayList<>();
         resultColumns.add("id");
-
         for (String column : columnsT1) {
             if (!column.equals(column1) && !column.equals("id")) {
                 resultColumns.add(table1.getTableName() + "." + column);
@@ -117,12 +118,10 @@ public class Database {
                 resultColumns.add(table2.getTableName() + "." + column);
             }
         }
-
-
+        // union the rows from tables that is satisfied condition
         List<ArrayList<String>> resultRows = new ArrayList<>();
         List<ArrayList<String>> rows1 = table1.getRows();
         List<ArrayList<String>> rows2 = table2.getRows();
-
         for (ArrayList<String> row1 : rows1) {
             for (ArrayList<String> row2 : rows2) {
                 if (row1.get(index1).equals(row2.get(index2))) {
@@ -145,7 +144,7 @@ public class Database {
 
         return ToolUtils.printTable(resultColumns, resultRows);
     }
-
+    //remove table
     public String remove(String tableName) throws Exception {
         tableName = tableName.toLowerCase().trim();
         Table table = getTable(tableName);

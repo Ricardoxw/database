@@ -64,6 +64,7 @@ public class Table {
         this.columnNames = columnNames;
     }
 
+    //load table from filePath
     public static Table loadTable(String tableName, String filePath) throws IOException {
         tableName = tableName.toLowerCase().trim();
         Table table = new Table();
@@ -77,7 +78,7 @@ public class Table {
                 columnNames.add(column.trim());
             }
             table.setColumnNames(columnNames);
-
+            //if there is a column without value, put a "" value in row
             while ((line = br.readLine()) != null) {
                 String[] rowArray = line.split("\t");
                 ArrayList<String> row = new ArrayList<>();
@@ -94,6 +95,7 @@ public class Table {
         return table;
     }
 
+    // Store the table after insert
     public void appendRowToFile(String filePath, ArrayList<String> row) throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath, true))) {
             bw.write(String.join("\t", row));
@@ -101,6 +103,8 @@ public class Table {
         }
     }
 
+    // Save all table, it may cost long time, also we can improve the time by execute this function before server close instead of sql command commit.
+    // but it may lost some data.
     public void saveTable() throws IOException {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(storagePath))) {
             bw.write(String.join("\t", columnNames));
@@ -113,9 +117,11 @@ public class Table {
     }
 
     public String insert(ArrayList<String> values) throws Exception {
+        // insert id, generateId is the function which ensure the id is unique.
         String id = ToolUtils.generateId();
         ArrayList<String> row = new ArrayList<>();
         row.add(id);
+        // if it is a string with '', '' should be removed.
         for (String value : values) {
             Expression expression = new Expression(value);
             if (Expression.validateExpressionValue(expression)) {
@@ -125,11 +131,14 @@ public class Table {
                 row.add(value.trim());
             }
         }
+        //save row in memory
         rows.add(row);
+        //save in file
         appendRowToFile(storagePath, row);
         return "";
     }
 
+    //just add a column at the end of first row
     public String addColumns(ArrayList<String> columns) throws Exception {
         int count = 0;
         for (String column : columns) {
@@ -145,6 +154,7 @@ public class Table {
         return "Add " + count + " columns.";
     }
 
+    //remove column in the first row
     public String dropColumns(ArrayList<String> columns) throws Exception {
         List<Integer> columnIndexes = new ArrayList<>();
         int count = 0;
@@ -155,7 +165,7 @@ public class Table {
             }
             columnIndexes.add(index);
         }
-
+        //it should be reverse the order, otherwise, it will change the index of other columns
         columnIndexes.sort(Collections.reverseOrder());
 
         for (int index : columnIndexes) {
@@ -172,6 +182,7 @@ public class Table {
     public String delete(String conditionStr) throws Exception {
         Expression condition = new Expression(conditionStr);
         int count = 0;
+        //find the row which is satisfied the condition
         for (Iterator<ArrayList<String>> it = rows.iterator(); it.hasNext(); ) {
             ArrayList<String> row = it.next();
             if (condition.isConditionSatisfied(columnNames, row)) {
@@ -191,6 +202,7 @@ public class Table {
             String[] params = update.trim().split("=");
             String column = params[0].trim();
             ToolUtils.checkColumnValid(column);
+            // check column is valid and not id.
             if (ToolUtils.checkColumnEqualsId(column)) {
                 throw new IllegalArgumentException("Updating the ID of a record");
             }
@@ -198,7 +210,7 @@ public class Table {
                 throw new IllegalArgumentException("Attribute does not exist");
             }
         }
-
+        //get column and value
         Map<String, String> updateMap = new HashMap<>();
         for (String update : updates) {
             String[] params = update.trim().split("=");
@@ -206,7 +218,7 @@ public class Table {
             String value = params[1].trim();
             updateMap.put(column, value);
         }
-
+        //find the row which is satisfied the condition
         for (ArrayList<String> row : rows) {
             if (condition.isConditionSatisfied(columnNames, row)) {
                 for (Map.Entry<String, String> entry : updateMap.entrySet()) {
@@ -232,6 +244,7 @@ public class Table {
                 throw new IllegalArgumentException("Attribute in condition does not exist");
             }
         }
+        //find the row which is satisfied the condition
         for (ArrayList<String> row : rows) {
             if (condition.isConditionSatisfied(columnNames, row)) {
                 ArrayList<String> selectedRow = new ArrayList<>();

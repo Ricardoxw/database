@@ -10,6 +10,7 @@ public class Command {
     private String sql;
     private CommandType type;
 
+    // parse the sql type and make sure that the sql with semicolon
     public Command(String content) {
         String trimmedSQL = content.trim().replaceAll("\\s+", " ");
 
