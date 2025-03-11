@@ -174,6 +174,7 @@ public class Expression {
         }
         return false;
     }
+
     // Value can only be TRUE FALSE 'aaa' 1.23124, if there is a string like a1231, it's invalid value
     public static boolean validateExpressionValue(Expression expression) {
         String expressionValue = expression.getValue();

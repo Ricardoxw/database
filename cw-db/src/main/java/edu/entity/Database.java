@@ -80,6 +80,7 @@ public class Database {
 
         return "";
     }
+
     //get table from map or file or return an exception
     public Table getTable(String tableName) throws IOException {
         tableName = tableName.toLowerCase().trim();
@@ -144,6 +145,7 @@ public class Database {
 
         return ToolUtils.printTable(resultColumns, resultRows);
     }
+
     //remove table
     public String remove(String tableName) throws Exception {
         tableName = tableName.toLowerCase().trim();

@@ -3,7 +3,7 @@ package edu.constant;
 import java.util.Set;
 
 public class Constants {
-    // define some constants so that I can avoid write them incorrectly.
+    // define some constants
     public static final String USE = "USE";
     public static final String CREATE = "CREATE";
     public static final String DROP = "DROP";

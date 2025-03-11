@@ -20,6 +20,9 @@ public class Command {
 
         this.sql = trimmedSQL.substring(0, trimmedSQL.length() - 1);
         this.type = getCommandType(this.sql);
+        if (this.type == null) {
+            throw new IllegalArgumentException("Invalid command type");
+        }
     }
 
     public String execute(DBServer dbServer) throws Exception {

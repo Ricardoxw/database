@@ -1,11 +1,9 @@
 package edu.uob;
 
-import edu.entity.Expression;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,7 +49,7 @@ public class MyDBTests {
         sendCommandToServer("USE " + randomName + ";");
     }
 
-    public void createMarkbookTable(){
+    public void createMarkbookTable() {
         sendCommandToServer("CREATE TABLE marks (name, mark, pass);");
         sendCommandToServer("INSERT INTO marks VALUES ('Simon', 65, TRUE);");
         sendCommandToServer("INSERT INTO marks VALUES ('Sion', 55, TRUE);");

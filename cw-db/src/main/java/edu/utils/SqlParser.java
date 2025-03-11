@@ -9,21 +9,27 @@ public class SqlParser {
     public static String[] parseSQL(CommandType type, String sql) {
         // we parse the sql sentence by split the keywords
         // and get the index of params then split params and return them
-        return switch (type) {
-            case USE -> parseUse(sql);
-            case CREATE_DATABASE -> parseCreateDatabase(sql);
-            case CREATE_TABLE -> parseCreateTable(sql);
-            case INSERT -> parseInsert(sql);
-            case SELECT -> parseSelect(sql);
-            case UPDATE -> parseUpdate(sql);
-            case DELETE -> parseDelete(sql);
-            case DROP_DATABASE -> parseDropDatabase(sql);
-            case DROP_TABLE -> parseDropTable(sql);
-            case ALTER_TABLE_ADD -> parseAlterTableAdd(sql);
-            case ALTER_TABLE_DROP -> parseAlterTableDrop(sql);
-            case JOIN -> parseJoin(sql);
-            default -> throw new IllegalArgumentException("Unknown SQL command type: " + type);
-        };
+        String[] res = null;
+        try {
+            switch (type) {
+                case USE -> res = parseUse(sql);
+                case CREATE_DATABASE -> res = parseCreateDatabase(sql);
+                case CREATE_TABLE -> res = parseCreateTable(sql);
+                case INSERT -> res = parseInsert(sql);
+                case SELECT -> res = parseSelect(sql);
+                case UPDATE -> res = parseUpdate(sql);
+                case DELETE -> res = parseDelete(sql);
+                case DROP_DATABASE -> res = parseDropDatabase(sql);
+                case DROP_TABLE -> res = parseDropTable(sql);
+                case ALTER_TABLE_ADD -> res = parseAlterTableAdd(sql);
+                case ALTER_TABLE_DROP -> res = parseAlterTableDrop(sql);
+                case JOIN -> res = parseJoin(sql);
+                default -> throw new IllegalArgumentException("Invalid SQL: " + sql);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid SQL: " + sql);
+        }
+        return res;
     }
 
     //USE markbook;
@@ -44,7 +50,12 @@ public class SqlParser {
     private static String[] parseCreateTable(String sql) {
         String[] parts = sql.split(" ");
         String tableName = parts[2].toLowerCase();
-        String columns = sql.substring(sql.indexOf("(") + 1, sql.indexOf(")")).trim();
+        String columns;
+        try {
+            columns = sql.substring(sql.indexOf("(") + 1, sql.indexOf(")")).trim();
+        } catch (Exception e) {
+            columns = "";
+        }
         return new String[]{tableName, columns};
     }
 

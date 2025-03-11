@@ -45,7 +45,6 @@ public class DBServer {
      */
     public DBServer() {
         storageFolderPath = Paths.get("databases").toAbsolutePath().toString();
-        System.out.println("Database folder path: " + storageFolderPath);
         try {
             // Create the database storage folder if it doesn't already exist !
             Files.createDirectories(Paths.get(storageFolderPath));
