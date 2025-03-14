@@ -227,8 +227,9 @@ public class Expression {
                 return rowValue.equals(conditionValue);
             } else if (operator.equals(Constants.NOT_EQUAL_OPERATOR)) {
                 return !rowValue.equals(conditionValue);
+            }else{
+                return false;
             }
-            throw new IllegalArgumentException("Unsupported operator: " + operator);
         }
     }
 

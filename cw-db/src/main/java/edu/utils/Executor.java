@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Executor {
     //Executor is a class used to manage the execution process of the entire SQL, mainly including parameter parsing and validity checking, and method calls in Table.
@@ -64,12 +65,15 @@ public class Executor {
         String[] params = SqlParser.parseSQL(CommandType.INSERT, sql);
         String tableName = params[0];
         String[] values = params[1].split(",");
+        List<String> valueList = Arrays.stream(values)
+                .map(String::trim)
+                .toList();
         Database db = dbServer.getDatabase();
         Table table = db.getTable(tableName);
-        if (values.length != table.getColumnNames().size() - 1) {
+        if (valueList.size() != table.getColumnNames().size() - 1) {
             throw new IllegalArgumentException("Trying to insert too many (or too few) values into a table entry");
         }
-        return table.insert(new ArrayList<>(List.of(values)));
+        return table.insert(valueList);
     }
 
     public static String select(String sql, DBServer dbServer) throws Exception {

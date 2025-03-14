@@ -110,12 +110,12 @@ public class Database {
         ArrayList<String> resultColumns = new ArrayList<>();
         resultColumns.add("id");
         for (String column : columnsT1) {
-            if (!column.equals(column1) && !column.equals("id")) {
+            if (!column.equalsIgnoreCase(column1) && !column.equals("id")) {
                 resultColumns.add(table1.getTableName() + "." + column);
             }
         }
         for (String column : columnsT2) {
-            if (!column.equals(column2) && !column.equals("id")) {
+            if (!column.equalsIgnoreCase(column2) && !column.equals("id")) {
                 resultColumns.add(table2.getTableName() + "." + column);
             }
         }
@@ -127,7 +127,8 @@ public class Database {
             for (ArrayList<String> row2 : rows2) {
                 if (row1.get(index1).equals(row2.get(index2))) {
                     ArrayList<String> newRow = new ArrayList<>();
-                    newRow.add(ToolUtils.generateId());
+//                    newRow.add(ToolUtils.generateId());
+                    newRow.add(String.valueOf(resultRows.size() + 1));
                     for (int i = 1; i < columnsT1.size(); i++) {
                         if (i != index1) {
                             newRow.add(row1.get(i));

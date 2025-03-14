@@ -100,7 +100,6 @@ public class MyDBTests {
         assertTrue(response.contains("coursework.task"), "Expected coursework.task to be returned by the JOIN query");
         assertTrue(response.contains("DB"), "Expected Simon to be returned by the JOIN query");
         assertTrue(response.contains("OXO"), "Expected OXO to be returned by the JOIN query");
-        sendCommandToServer("DROP DATABASE " + randomName + ";");
     }
 
     @Test

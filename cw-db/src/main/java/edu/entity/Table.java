@@ -9,7 +9,7 @@ public class Table {
     private String tableName;
     private List<ArrayList<String>> rows;
     private ArrayList<String> columnNames;
-
+    private int index;// next Index can be use
     public Table() {
         rows = new ArrayList<>();
     }
@@ -92,6 +92,11 @@ public class Table {
                 table.rows.add(row);
             }
         }
+        if(table.rows.size()>0){
+            table.setIndex(Integer.parseInt(table.getRows().get(table.rows.size()-1).get(0))+1);
+        }else{
+            table.setIndex(1);
+        }
         return table;
     }
 
@@ -116,9 +121,17 @@ public class Table {
         }
     }
 
-    public String insert(ArrayList<String> values) throws Exception {
+    public int getIndex() {
+        return index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public String insert(List<String> values) throws Exception {
         // insert id, generateId is the function which ensure the id is unique.
-        String id = ToolUtils.generateId();
+        String id = ToolUtils.generateId(this);
         ArrayList<String> row = new ArrayList<>();
         row.add(id);
         // if it is a string with '', '' should be removed.

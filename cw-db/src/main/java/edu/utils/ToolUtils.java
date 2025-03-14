@@ -1,6 +1,7 @@
 package edu.utils;
 
 import edu.constant.Constants;
+import edu.entity.Table;
 
 import java.io.File;
 import java.util.*;
@@ -8,10 +9,33 @@ import java.util.*;
 public class ToolUtils {
     public static String printTable(List<String> columns, List<ArrayList<String>> rows) {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.join("\t", columns)).append("\n");
-        for (ArrayList<String> row : rows) {
-            sb.append(String.join("\t", row)).append("\n");
+
+        // Initialize an array to store the maximum width of each column
+        int[] maxWidths = new int[columns.size()];
+        for (int i = 0; i < columns.size(); i++) {
+            maxWidths[i] = columns.get(i).length();
         }
+        for (ArrayList<String> row : rows) {
+            for (int i = 0; i < row.size(); i++) {
+                maxWidths[i] = Math.max(maxWidths[i], row.get(i).length());
+            }
+        }
+        // Format and append the column headers
+        for (int i = 0; i < columns.size(); i++) {
+            if (i > 0) sb.append("\t");
+            sb.append(String.format("%-" + maxWidths[i] + "s", columns.get(i)));
+        }
+        sb.append("\n");
+
+        // Format and append each row of data
+        for (ArrayList<String> row : rows) {
+            for (int i = 0; i < row.size(); i++) {
+                if (i > 0) sb.append("\t");
+                sb.append(String.format("%-" + maxWidths[i] + "s", row.get(i)));
+            }
+            sb.append("\n");
+        }
+
         return sb.toString();
     }
 
@@ -44,6 +68,12 @@ public class ToolUtils {
         int timePart = (int) (timestamp % 1000000);
         int random = new Random().nextInt(100);
         return String.valueOf(timePart) + random;
+    }
+
+    public static String generateId(Table table) {
+        int index = table.getIndex();
+        table.setIndex(index + 1);
+        return String.valueOf(index);
     }
 
     // compare column name ignore case
